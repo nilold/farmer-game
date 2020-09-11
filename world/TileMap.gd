@@ -1,6 +1,7 @@
 extends TileMap
 
-var gound
+var Crop1 = preload("res://crop/Crop.tscn")
+onready var crops = $Crops
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -10,8 +11,21 @@ func _ready():
 
 func _input(event):
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == BUTTON_LEFT:
-			left_clicked_on_tile(world_to_map(event.position))
+		match event.button_index:
+			BUTTON_LEFT:
+				left_clicked_on_tile()
+			BUTTON_MIDDLE:
+				middle_button_clicked()
 
-func left_clicked_on_tile(pos: Vector2):
-	print(pos)
+func left_clicked_on_tile():
+	pass
+
+func middle_button_clicked():
+	create_new_crop_at(get_global_mouse_position())
+
+func create_new_crop_at(global_position):
+	var newCrop = Crop1.instance()
+	var mapPos = world_to_map(global_position)
+	newCrop.position = map_to_world(mapPos)
+	newCrop.index = mapPos
+	crops.add_child(newCrop)
