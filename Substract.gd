@@ -3,6 +3,7 @@ extends Node
 var nutrients = {}
 var water = 0
 
+
 func consume_nutrient(nutrient: String, quantity: int):
 	var acquired = 0
 	if has_nutrient(nutrient):
@@ -13,8 +14,9 @@ func consume_nutrient(nutrient: String, quantity: int):
 		else:
 			nutrients[nutrient] = 0
 			acquired = present
-	
+
 	return acquired
-	
+
+
 func has_nutrient(nutrient: String):
 	return nutrient in nutrients

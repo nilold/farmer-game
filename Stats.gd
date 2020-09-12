@@ -1,13 +1,9 @@
 extends Node2D
 
-enum mouse_states {
-	ADD_CROP,
-	ADD_DISEASE,
-	EVOLVE,
-	SPREAD
-}
+enum mouse_states { ADD_CROP, ADD_DISEASE, EVOLVE, SPREAD }
 
 var mouse_state = 0
+
 
 func _input(event):
 	if event is InputEventKey:
