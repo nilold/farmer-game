@@ -17,6 +17,7 @@ script = ExtResource( 4 )
 [node name="Crops" type="Node2D" parent="Field"]
 
 [node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2( 160, 96 )
 offset = Vector2( 200, 200 )
 current = true
 zoom = Vector2( 0.5, 0.5 )

@@ -10,36 +10,42 @@ var crops = {}
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass
-#	_tileset = get_tileset()
-#	set_process_input(true)
+
+var pressed = false
 
 func _input(event):
-	if event is InputEventMouseButton and event.pressed:
-		match stats.mouse_state:
-			stats.mouse_states.ADD_CROP:
-				add_crop()
-			stats.mouse_states.ADD_DISEASE:
-				add_disease()
-			stats.mouse_states.SPREAD:
-				spread_diseases()
+	if event is InputEventMouseButton and event.button_index == BUTTON_LEFT:
+		pressed = event.is_pressed()
+		if pressed:
+			match stats.mouse_state:
+				stats.mouse_states.ADD_DISEASE:
+					add_disease()
+				stats.mouse_states.SPREAD:
+					spread_diseases()
+		
+	if event is InputEventMouseMotion and pressed and stats.mouse_state == stats.mouse_states.ADD_CROP:
+			add_crop()
 
 
 func add_crop():
 	var newCrop = create_new_crop_at(get_global_mouse_position())
+
 	if not newCrop.index.x in crops:
 		crops[newCrop.index.x] = {}
-	crops[newCrop.index.x][newCrop.index.y] = newCrop
+
+	if not newCrop.index.y in crops[newCrop.index.x]:
+		Crops.add_child(newCrop)
+		crops[newCrop.index.x][newCrop.index.y] = newCrop
 
 func create_new_crop_at(global_position):
 	var newCrop = Crop1.instance()
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos
-	Crops.add_child(newCrop)
 	return newCrop
 	
 	
-func remove_crop(crop):
+func remove_crop(_crop):
 	pass
 
 func add_disease():
@@ -69,7 +75,7 @@ func get_indexes_to_inffect():
 			var down = Vector2(index.x, index.y + 1)
 			var left = Vector2(index.x - 1, index.y)
 			var right = Vector2(index.x + 1, index.y)
-
+	
 			if not up in indexes_to_inffect:
 				indexes_to_inffect[up] = []
 			if not down in indexes_to_inffect:
@@ -78,7 +84,7 @@ func get_indexes_to_inffect():
 				indexes_to_inffect[left] = []
 			if not right in indexes_to_inffect:
 				indexes_to_inffect[right] = []
-
+	
 			for disease in crop.diseases.values():
 				indexes_to_inffect[up].append(disease)
 				indexes_to_inffect[down].append(disease)

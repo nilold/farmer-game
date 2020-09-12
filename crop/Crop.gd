@@ -1,19 +1,9 @@
-extends Node2D
+extends "res://crop/Inffectable.gd"
 
 export var MAX_HEALTH = 100
 var health = MAX_HEALTH
-
-var nutrients = {
-	"K": 10,
-	"Na": 10
-}
-var water = 100
-
-var diseases = {}
-
-onready var sprite = $AnimatedSprite
-
 var index: Vector2
+
 
 func _ready():
 	print("new Node at " + str(index))
@@ -33,7 +23,6 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 		if event.button_index == BUTTON_LEFT:
 			left_clicked_on_tile()
 
-func inffect(disease):
-	if not disease.ID in diseases:
-		diseases[disease.ID] = disease
-		print("crop " + str(index) + " inffected with " + str(disease))
+
+func activate_diseases():
+	pass
