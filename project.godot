@@ -19,6 +19,10 @@ config/name="farmer"
 run/main_scene="res://world/World.tscn"
 config/icon="res://icon.png"
 
+[autoload]
+
+Stats="*res://Stats.tscn"
+
 [display]
 
 window/size/height=1024

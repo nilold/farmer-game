@@ -1,5 +1,15 @@
 extends Node2D
 
+export var MAX_HEALTH = 100
+var health = MAX_HEALTH
+
+var nutrients = {
+	"K": 10,
+	"Na": 10
+}
+var water = 100
+
+var diseases = {}
 
 onready var sprite = $AnimatedSprite
 
@@ -22,3 +32,8 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == BUTTON_LEFT:
 			left_clicked_on_tile()
+
+func inffect(disease):
+	if not disease.ID in diseases:
+		diseases[disease.ID] = disease
+		print("crop " + str(index) + " inffected with " + str(disease))
