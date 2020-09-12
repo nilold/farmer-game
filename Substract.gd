@@ -8,7 +8,7 @@ var nutrients = {}
 func _init(randomize_nutrients: bool = false):
 	if randomize_nutrients:
 		for nutrient in NUTRIENTS:
-			nutrients[nutrient] = int(rand_range(0, 100))
+			nutrients[nutrient] = int(rand_range(0, 50))
 
 
 func add_nutrient(nutrient: String, quantity: int):

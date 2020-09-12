@@ -13,10 +13,14 @@ var soil_substracts = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	Crop.connect("get_soil_nutrients", self, "get_soil_nutrients")
+	# var _err = Crop.connect("crop_died", self, "on_crop_died")
+	pass
 
 
 var pressed = false
+
+func on_crop_died(index: Vector2):
+	crops[index.x].erase(index.y)
 
 
 func _input(event):
@@ -29,12 +33,29 @@ func _input(event):
 				stats.mouse_states.SPREAD:
 					spread_diseases()
 
-	if (
+	if event is InputEventKey and stats.mouse_state == stats.mouse_states.CYCLE:
+		cycle()
+
+	if click_to_add_crop(event):
+		add_crop()
+
+
+func click_to_add_crop(event):
+	return (
 		event is InputEventMouseMotion
 		and pressed
 		and stats.mouse_state == stats.mouse_states.ADD_CROP
-	):
-		add_crop()
+	)
+
+
+func cycle():
+	cycle_crops()
+
+
+func cycle_crops():
+	for crop_x in crops:
+		for crop_y in crops[crop_x]:
+			crops[crop_x][crop_y].cycle()
 
 
 func add_crop():
@@ -49,7 +70,9 @@ func add_crop():
 
 
 func create_new_crop_at(global_position):
-	var newCrop = Crop.instance(self)
+	var newCrop = Crop.instance()
+	newCrop._init(self)
+	newCrop.needs = {"Na": 50}
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos
@@ -105,16 +128,19 @@ func get_indexes_to_inffect():
 
 	return indexes_to_inffect
 
+
 func get_soil_nutrients(index: Vector2):
 	if not soil_has_substract(index):
 		create_substract_at(index)
 
 	return soil_substracts[index.x][index.y]
 
+
 func soil_has_substract(index: Vector2):
 	return index.x in soil_substracts and index.y in soil_substracts[index.x]
+
 
 func create_substract_at(index: Vector2):
 	if not index.x in soil_substracts:
 		soil_substracts[index.x] = {}
-		soil_substracts[index.x][index.y] = Substract.new(true)
+	soil_substracts[index.x][index.y] = Substract.new(true)

@@ -1,6 +1,6 @@
 extends Node2D
 
-enum mouse_states { ADD_CROP, ADD_DISEASE, EVOLVE, SPREAD }
+enum mouse_states { ADD_CROP, ADD_DISEASE, EVOLVE, SPREAD, CYCLE }
 
 var mouse_state = 0
 
@@ -20,3 +20,6 @@ func _input(event):
 			KEY_S:
 				mouse_state = mouse_states.SPREAD
 				print("spread")
+			KEY_C:
+				mouse_state = mouse_states.CYCLE
+				print("cycle")

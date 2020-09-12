@@ -44,3 +44,17 @@ func test_nutrient_absorption():
 
 	crop.absorve_nutrients_from_soil()
 	assert_eq(substract.nutrients[nutrient], original_amount - 10)
+
+func test_crop_dies_if_no_nutrients():
+	var pos = Vector2(5, 5)
+	var nutrient = "Na"
+	var crop = Crop.new(field)
+	crop.index = pos
+	crop.needs = {nutrient: 10}
+	crop.has = {}
+	var substract = autofree(field.get_soil_nutrients(pos))
+	substract.nutrients[nutrient] = 0
+
+	crop.cycle()
+
+	assert_true(crop.is_dead)
