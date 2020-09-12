@@ -28,7 +28,6 @@ func after_all():
 
 func test_bacteria_dies_after_if_no_nutrient():
 	substract.nutrients = {}
-	substract.water = 0
 	bacteria.consume(substract)
 
 	assert_lt(bacteria.health, initial_health)

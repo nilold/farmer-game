@@ -1,5 +1,7 @@
 extends "res://addons/gut/test.gd"
 
+var MyClass = load("res:/my_script.gd")
+
 func before_all():
 	pass
 

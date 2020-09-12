@@ -1,16 +1,19 @@
 extends TileMap
 
-var Crop1 = preload("res://crop/Crop.tscn")
+var Crop = preload("res://crop/Crop.tscn")
 var Bacteria = preload("res://Disease/Bacteria.tscn")
+var Substract = preload("res://Substract.gd")
 onready var Crops = $Crops
 var stats = Stats
 
 var crops = {}
 
+var soil_substracts = {}
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	pass
+	Crop.connect("get_soil_nutrients", self, "get_soil_nutrients")
 
 
 var pressed = false
@@ -46,7 +49,7 @@ func add_crop():
 
 
 func create_new_crop_at(global_position):
-	var newCrop = Crop1.instance()
+	var newCrop = Crop.instance(self)
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos
@@ -101,3 +104,17 @@ func get_indexes_to_inffect():
 				indexes_to_inffect[right].append(disease)
 
 	return indexes_to_inffect
+
+func get_soil_nutrients(index: Vector2):
+	if not soil_has_substract(index):
+		create_substract_at(index)
+
+	return soil_substracts[index.x][index.y]
+
+func soil_has_substract(index: Vector2):
+	return index.x in soil_substracts and index.y in soil_substracts[index.x]
+
+func create_substract_at(index: Vector2):
+	if not index.x in soil_substracts:
+		soil_substracts[index.x] = {}
+		soil_substracts[index.x][index.y] = Substract.new(true)
