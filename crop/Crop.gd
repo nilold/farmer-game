@@ -7,6 +7,17 @@ var total_needs = 0
 var is_dead = false
 var field
 
+enum growth_stages { SEED, GROWING, GROWN, ROT }
+var growth_stage = growth_stages.SEED
+
+enum yield_stages { A, B, C }
+
+var yield_stage = yield_stages.A
+
+# var current_cycle = 0
+var maturity = 0
+export (int)var maturity_levels_to_grow = 10
+
 
 func _init(parent_field = null):
 	self.field = parent_field
@@ -29,11 +40,13 @@ func update_total_needs():
 
 
 func cycle():
+	# current_cycle += 1
 	absorve_nutrients_from_soil()
 	activate_diseases()
 	update_health()
 	if self.health < 1:
 		die()
+	grow()
 
 
 func left_clicked_on_tile():
@@ -79,7 +92,7 @@ func update_health():
 		total_lacking += get_lacking_amount(n)
 
 	var damage = float(total_lacking) / total_needs  # 0 to 1
-	self.health -= damage * self.health * 0.5 # amortization
+	self.health -= damage * self.health * 0.5  # amortization
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 
@@ -94,3 +107,16 @@ func die():
 	is_dead = true
 	field.on_crop_died(index)  #TODO: use signal?
 	queue_free()
+
+
+func grow():
+	if growth_stage == growth_stages.ROT:
+		return
+
+	if self.health > self.MAX_HEALTH / 2:  #TODO: smarter condition(s)
+		self.maturity += 1
+
+	if self.maturity >= self.maturity_levels_to_grow:
+		self.maturity = 0
+		growth_stage += 1
+		sprite.frame = growth_stage
