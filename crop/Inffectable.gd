@@ -26,7 +26,7 @@ func inffection_succeeds(_disease):
 
 func activate_diseases():
 	for disease in diseases:
-		disease.consume(substract)
+		diseases[disease].consume(substract)
 
 
 func has_disease(disease_id: String):

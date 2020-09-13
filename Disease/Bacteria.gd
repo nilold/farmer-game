@@ -5,7 +5,7 @@ export var MAX_HEALTH = 100
 export var MIN_HEALTH = 10
 export var health = 100
 export var CONTAMINATION_RADIUS = 1
-export var needs = {"K": 2, "Na": 2}
+export var needs = {"K": 10, "Na": 10}
 
 var is_dead = false
 

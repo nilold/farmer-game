@@ -19,6 +19,7 @@ func _ready():
 
 var pressed = false
 
+
 func on_crop_died(index: Vector2):
 	crops[index.x].erase(index.y)
 
@@ -72,7 +73,7 @@ func add_crop():
 func create_new_crop_at(global_position):
 	var newCrop = Crop.instance()
 	newCrop._init(self)
-	newCrop.needs = {"Na": 50}
+	newCrop.needs = {"Na": 10}
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos

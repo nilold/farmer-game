@@ -3,7 +3,6 @@ extends "res://crop/Inffectable.gd"
 var index: Vector2
 
 var needs = {} setget set_needs
-var has = {}
 var total_needs = 0
 var is_dead = false
 var field
@@ -30,7 +29,6 @@ func update_total_needs():
 
 
 func cycle():
-	print("CYCLINGGGG")
 	absorve_nutrients_from_soil()
 	activate_diseases()
 	update_health()
@@ -52,9 +50,9 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 			left_clicked_on_tile()
 
 
-func activate_diseases():
-	for disease in diseases:
-		pass
+# func activate_diseases():
+# 	for disease in diseases:
+# 		disease.consume()
 
 
 func absorve_nutrients_from_soil():
@@ -62,12 +60,13 @@ func absorve_nutrients_from_soil():
 		printerr("Crop has no field. Can not absorve nutrients.")
 		return
 
-	var substract = field.get_soil_nutrients(self.index)
+	var soil_substract = field.get_soil_nutrients(self.index)
+	var nutrients = self.substract.nutrients
 
 	for n in needs:
 		var lacking = get_lacking_amount(n)
 		if lacking > 0:
-			has[n] += substract.consume_nutrient(n, lacking)  #TODO: all at once?
+			nutrients[n] += soil_substract.consume_nutrient(n, lacking)  #TODO: all at once?
 
 
 func update_health():
@@ -79,25 +78,19 @@ func update_health():
 	for n in needs:
 		total_lacking += get_lacking_amount(n)
 
-	print(has)
-
 	var damage = float(total_lacking) / total_needs  # 0 to 1
-	print("damage:" + str(damage))
 	self.health -= damage * self.health
-	print("health:" + str(self.health))
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 
-
 func get_lacking_amount(nutrient) -> int:
-	if not nutrient in has:
-		has[nutrient] = 0
-	return needs[nutrient] - has[nutrient]
+	if not nutrient in self.substract.nutrients:
+		self.substract.nutrients[nutrient] = 0
+	return needs[nutrient] - self.substract.nutrients[nutrient]
 
-# signal crop_died(index)
 
 func die():
 	print_debug("Crop at " + str(index) + " died.")
 	is_dead = true
-	field.on_crop_died(index) #TODO: use signal?
+	field.on_crop_died(index)  #TODO: use signal?
 	queue_free()
