@@ -79,7 +79,7 @@ func update_health():
 		total_lacking += get_lacking_amount(n)
 
 	var damage = float(total_lacking) / total_needs  # 0 to 1
-	self.health -= damage * self.health
+	self.health -= damage * self.health * 0.5 # amortization
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 

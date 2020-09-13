@@ -50,6 +50,7 @@ func click_to_add_crop(event):
 
 
 func cycle():
+	spread_diseases()
 	cycle_crops()
 
 
@@ -73,7 +74,7 @@ func add_crop():
 func create_new_crop_at(global_position):
 	var newCrop = Crop.instance()
 	newCrop._init(self)
-	newCrop.needs = {"Na": 10}
+	newCrop.needs = {"Na": 7}
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos

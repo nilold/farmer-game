@@ -4,3 +4,7 @@
 
 [node name="Bacteria" type="Node"]
 script = ExtResource( 1 )
+needs = {
+"K": 3,
+"Na": 3
+}
