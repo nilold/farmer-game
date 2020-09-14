@@ -22,6 +22,8 @@ var pressed = false
 
 func on_crop_died(index: Vector2):
 	crops[index.x].erase(index.y)
+	if len(crops[index.x]) == 0:
+		crops.erase(index.x)
 
 
 func _input(event):
@@ -73,7 +75,7 @@ func add_crop():
 
 func create_new_crop_at(global_position):
 	var newCrop = Crop.instance()
-	newCrop._init(self)
+	# newCrop._init(self) #TODO: remove manual constructor call
 	newCrop.needs = {"Na": 7}
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)

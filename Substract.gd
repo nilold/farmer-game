@@ -33,3 +33,7 @@ func consume_nutrient(nutrient: String, quantity: int):
 
 func has_nutrient(nutrient: String):
 	return nutrient in nutrients
+
+
+func get_nutrients():
+	return self.substract.nutrients

@@ -5,27 +5,30 @@ var index: Vector2
 var needs = {} setget set_needs
 var total_needs = 0
 var is_dead = false
-var field
+onready var field = get_parent().get_parent()
 
 enum growth_stages { SEED, GROWING, GROWN, ROT }
 var growth_stage = growth_stages.SEED
+# var current_cycle = 0
 
 enum yield_stages { A, B, C }
-
 var yield_stage = yield_stages.A
+export var yield_a_rate = 10
+export var yield_b_rate = 0
+export var yield_c_rate = -20
+var current_yield_rate = yield_a_rate
+var current_yield = 0
 
-# var current_cycle = 0
 var maturity = 0
-export (int)var maturity_levels_to_grow = 10
+export var maturity_levels_to_grow = 5
 
-
-func _init(parent_field = null):
-	self.field = parent_field
-	update_total_needs()
+# func _init(parent_field = null):
+# 	self.field = parent_field
 
 
 func _ready():
 	print_debug("new Node at " + str(index))
+	update_total_needs()
 
 
 func set_needs(new_needs):
@@ -44,9 +47,10 @@ func cycle():
 	absorve_nutrients_from_soil()
 	activate_diseases()
 	update_health()
+	grow()
+	update_yield()
 	if self.health < 1:
 		die()
-	grow()
 
 
 func left_clicked_on_tile():
@@ -63,23 +67,23 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 			left_clicked_on_tile()
 
 
-# func activate_diseases():
-# 	for disease in diseases:
-# 		disease.consume()
-
-
 func absorve_nutrients_from_soil():
 	if not field:
-		printerr("Crop has no field. Can not absorve nutrients.")
-		return
+		printerr("Crop has no field")
+		field = get_field()
 
 	var soil_substract = field.get_soil_nutrients(self.index)
-	var nutrients = self.substract.nutrients
+	var nutrients = self.get_nutrients()
 
 	for n in needs:
 		var lacking = get_lacking_amount(n)
 		if lacking > 0:
 			nutrients[n] += soil_substract.consume_nutrient(n, lacking)  #TODO: all at once?
+
+
+# need for testinig stubs
+func get_field():
+	return get_parent().get_parent()
 
 
 func update_health():
@@ -97,19 +101,20 @@ func update_health():
 
 
 func get_lacking_amount(nutrient) -> int:
-	if not nutrient in self.substract.nutrients:
-		self.substract.nutrients[nutrient] = 0
-	return needs[nutrient] - self.substract.nutrients[nutrient]
+	var nutrients = get_nutrients()
+	if not nutrient in nutrients:
+		nutrients[nutrient] = 0
+	return needs[nutrient] - nutrients[nutrient]
 
 
 func die():
-	print_debug("Crop at " + str(index) + " died.")
 	is_dead = true
 	field.on_crop_died(index)  #TODO: use signal?
 	queue_free()
 
 
 func grow():
+	#TODO consume nutrients
 	if growth_stage == growth_stages.ROT:
 		return
 
@@ -120,3 +125,14 @@ func grow():
 		self.maturity = 0
 		growth_stage += 1
 		sprite.frame = growth_stage
+
+
+func update_yield():
+	#TODO add tests
+	var h = health / MAX_HEALTH
+
+	if current_yield_rate >= 0:
+		current_yield += h * current_yield_rate
+	else:
+		current_yield += h / current_yield_rate
+	#TODO
