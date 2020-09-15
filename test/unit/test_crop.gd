@@ -57,18 +57,11 @@ func test_crop_dies_if_no_nutrients():
 	var substract = autofree(field.get_soil_nutrients(pos))
 	substract.nutrients[nutrient] = 0
 
-	stub(crop, 'die').to_do_nothing()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
-	crop.cycle()
+	stub(crop, '_die').to_do_nothing()
+	stub(crop, '_update_frame').to_do_nothing()
+	for _i in range(20):
+		crop.cycle()
 
-	assert_called(crop, "die")
+	assert_called(crop, "_die")
 	
 	

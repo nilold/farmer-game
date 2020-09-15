@@ -36,4 +36,4 @@ func has_nutrient(nutrient: String):
 
 
 func get_nutrients():
-	return self.substract.nutrients
+	return self.nutrients

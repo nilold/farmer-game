@@ -2,25 +2,25 @@ extends "res://crop/Inffectable.gd"
 
 var index: Vector2
 
-var needs = {} setget set_needs
+export var needs = {} setget set_needs
+export var rejects = {}  # TODO
 var total_needs = 0
 var is_dead = false
 onready var field = get_parent().get_parent()
 
-enum growth_stages { SEED, GROWING, GROWN, ROT }
-var growth_stage = growth_stages.SEED
-# var current_cycle = 0
+enum stages { SEED, GROWING, VEGETATIVE, REPRODUCTIVE, LAST }
+var stages_cycles = {
+	stages.SEED: 1, stages.GROWING: 10, stages.VEGETATIVE: 3, stages.REPRODUCTIVE: 3
+}
+export var current_stage = stages.SEED
+export var MINIMUM_HEALTH_TO_GROW = 20
+var stage_maturity = 0
 
-enum yield_stages { A, B, C }
-var yield_stage = yield_stages.A
-export var yield_a_rate = 10
-export var yield_b_rate = 0
-export var yield_c_rate = -20
-var current_yield_rate = yield_a_rate
-var current_yield = 0
-
-var maturity = 0
-export var maturity_levels_to_grow = 5
+export var MAX_YIELD = 100
+var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.REPRODUCTIVE]
+export var MINIMUN_HEALTH_TO_MAX_YIELD = 70
+export var current_yield = 0
+export var current_yield_limit = 100
 
 # func _init(parent_field = null):
 # 	self.field = parent_field
@@ -47,10 +47,10 @@ func cycle():
 	absorve_nutrients_from_soil()
 	activate_diseases()
 	update_health()
-	grow()
-	update_yield()
+	_grow()
+	_update_yield()
 	if self.health < 1:
-		die()
+		_die()
 
 
 func left_clicked_on_tile():
@@ -87,6 +87,7 @@ func get_field():
 
 
 func update_health():
+	#TODO[1]
 	if total_needs <= 0:
 		return
 
@@ -107,32 +108,37 @@ func get_lacking_amount(nutrient) -> int:
 	return needs[nutrient] - nutrients[nutrient]
 
 
-func die():
+func _die():
 	is_dead = true
 	field.on_crop_died(index)  #TODO: use signal?
 	queue_free()
 
 
-func grow():
-	#TODO consume nutrients
-	if growth_stage == growth_stages.ROT:
-		return
+func _grow():
+	# TODO consume self nutrients
+	# There should be info about water/nutrients consumption per unit of mass
 
-	if self.health > self.MAX_HEALTH / 2:  #TODO: smarter condition(s)
-		self.maturity += 1
+	if self.health > MINIMUM_HEALTH_TO_GROW:  #TODO: smarter condition(s)
+		self.stage_maturity += 1
 
-	if self.maturity >= self.maturity_levels_to_grow:
-		self.maturity = 0
-		growth_stage += 1
-		sprite.frame = growth_stage
+	if self.stage_maturity >= stages_cycles[current_stage]:
+		current_stage += 1
+		if current_stage == stages.LAST:
+			current_stage = stages.VEGETATIVE
+
+		_update_frame()
+		self.stage_maturity = 0
+
+func _update_frame():
+	sprite.frame = current_stage
+
+func _update_yield():
+	# TODO add tests
+	_update_yield_limit()
+	if current_stage == stages.REPRODUCTIVE:
+		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
 
 
-func update_yield():
-	#TODO add tests
-	var h = health / MAX_HEALTH
-
-	if current_yield_rate >= 0:
-		current_yield += h * current_yield_rate
-	else:
-		current_yield += h / current_yield_rate
-	#TODO
+func _update_yield_limit():
+	if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
+		current_yield_limit = MAX_YIELD * health / MAX_HEALTH #TODO[1]
