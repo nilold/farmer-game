@@ -11,10 +11,6 @@
 [node name="Field" parent="Ground" instance=ExtResource( 1 )]
 
 [node name="Item_Select" parent="." instance=ExtResource( 5 )]
-margin_left = 656.0
-margin_top = 32.0
-margin_right = 696.0
-margin_bottom = 72.0
 
 [node name="Editor_Object" type="Node2D" parent="."]
 script = ExtResource( 4 )

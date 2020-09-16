@@ -1,22 +1,23 @@
-[gd_scene load_steps=4 format=2]
+[gd_scene load_steps=5 format=2]
 
 [ext_resource path="res://crop/item_crop.tscn" type="PackedScene" id=1]
 [ext_resource path="res://GUI/TabContainer.gd" type="Script" id=2]
 [ext_resource path="res://Buildings/item_house1.tscn" type="PackedScene" id=3]
+[ext_resource path="res://GUI/ScrollContainer.gd" type="Script" id=4]
 
-[node name="Item_Select" type="Control"]
-margin_right = 40.0
-margin_bottom = 40.0
-__meta__ = {
-"_edit_use_anchors_": false
-}
+[node name="Item_Select" type="CanvasLayer"]
 
 [node name="TabContainer" type="TabContainer" parent="."]
-anchor_right = 5.2
-anchor_bottom = 3.6
+anchor_left = 1.0
+anchor_right = 1.0
+margin_left = -836.0
+margin_top = 32.0
+margin_right = -636.0
+margin_bottom = 232.0
 script = ExtResource( 2 )
 __meta__ = {
-"_edit_use_anchors_": true
+"_edit_group_": true,
+"_edit_use_anchors_": false
 }
 
 [node name="Crops" type="Tabs" parent="TabContainer"]
@@ -32,6 +33,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = -4.0
 margin_right = -4.0
+script = ExtResource( 4 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
@@ -67,6 +69,8 @@ __meta__ = {
 }
 
 [node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Buildings/ScrollContainer"]
+margin_right = 16.0
+margin_bottom = 16.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/Buildings/ScrollContainer/VBoxContainer"]
 
