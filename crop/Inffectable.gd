@@ -33,5 +33,5 @@ func has_disease(disease_id: String):
 	return disease_id in diseases
 
 
-func get_nutrients():
-	return self.substract.get_nutrients()
+func get_minerals():
+	return self.substract.get_minerals()

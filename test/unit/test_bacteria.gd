@@ -26,16 +26,16 @@ func after_all():
 	pass
 
 
-func test_bacteria_dies_after_if_no_nutrient():
-	substract.nutrients = {}
+func test_bacteria_dies_after_if_no_mineral():
+	substract.minerals = {}
 	bacteria.consume(substract)
 
 	assert_lt(bacteria.health, initial_health)
 	assert_true(bacteria.is_dead)
 
 
-func test_bacteria_reduces_health_if_insuficient_nutrients():
-	substract.nutrients = {"Na": 8}
+func test_bacteria_reduces_health_if_insuficient_minerals():
+	substract.minerals = {"Na": 8}
 	bacteria.needs = {"Na": 5}
 
 	bacteria.consume(substract)

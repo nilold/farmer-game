@@ -39,16 +39,16 @@ func _input(event):
 	if event is InputEventKey and stats.mouse_state == stats.mouse_states.CYCLE:
 		cycle()
 
-	if click_to_add_crop(event):
-		add_crop()
+	# if click_to_add_crop(event):
+	# 	add_crop()
 
 
-func click_to_add_crop(event):
-	return (
-		event is InputEventMouseMotion
-		and pressed
-		and stats.mouse_state == stats.mouse_states.ADD_CROP
-	)
+# func click_to_add_crop(event):
+# 	return (
+# 		event is InputEventMouseMotion
+# 		and pressed
+# 		and stats.mouse_state == stats.mouse_states.ADD_CROP
+# 	)
 
 
 func cycle():
@@ -62,9 +62,11 @@ func cycle_crops():
 			crops[crop_x][crop_y].cycle()
 
 
-func add_crop():
-	var newCrop = create_new_crop_at(get_global_mouse_position())
-
+func add_crop_at(newCrop, global_position):
+	var mapPos = world_to_map(global_position)
+	newCrop.position = map_to_world(mapPos)
+	newCrop.index = mapPos
+	
 	if not newCrop.index.x in crops:
 		crops[newCrop.index.x] = {}
 
@@ -73,14 +75,14 @@ func add_crop():
 		crops[newCrop.index.x][newCrop.index.y] = newCrop
 
 
-func create_new_crop_at(global_position):
-	var newCrop = Crop.instance()
-	# newCrop._init(self) #TODO: remove manual constructor call
-	newCrop.needs = {"Na": 7}
-	var mapPos = world_to_map(global_position)
-	newCrop.position = map_to_world(mapPos)
-	newCrop.index = mapPos
-	return newCrop
+# func place_object_at(global_position):
+# 	var newCrop = Crop.instance()
+# 	# newCrop._init(self) #TODO: remove manual constructor call
+# 	newCrop.needs = {"Na": 7}
+	
+# 	newCrop.position = map_to_world(mapPos)
+# 	newCrop.index = mapPos
+# 	return newCrop
 
 
 func remove_crop(_crop):
@@ -133,7 +135,7 @@ func get_indexes_to_inffect():
 	return indexes_to_inffect
 
 
-func get_soil_nutrients(index: Vector2):
+func get_soil_minerals(index: Vector2):
 	if not soil_has_substract(index):
 		create_substract_at(index)
 

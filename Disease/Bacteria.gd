@@ -22,7 +22,7 @@ func copy():
 func consume(substract):
 	for need in needs:
 		var needed_quantity = needs[need]
-		var acquired = substract.consume_nutrient(need, needed_quantity)
+		var acquired = substract.consume_mineral(need, needed_quantity)
 		if acquired < needed_quantity:
 			health *= float(acquired) / needed_quantity  # TODO: make a smarter logic
 			health = int(health)

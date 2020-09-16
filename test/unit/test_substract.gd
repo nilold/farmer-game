@@ -21,9 +21,9 @@ func after_all():
 	pass
 
 
-func test_nutrients_consumption():
-	substract.nutrients = {"K": 10}
+func test_minerals_consumption():
+	substract.minerals = {"K": 10}
 
-	assert_eq(substract.consume_nutrient("K", 7), 7)
-	assert_eq(substract.consume_nutrient("K", 7), 3)
-	assert_eq(substract.consume_nutrient("K", 7), 0)
+	assert_eq(substract.consume_mineral("K", 7), 7)
+	assert_eq(substract.consume_mineral("K", 7), 3)
+	assert_eq(substract.consume_mineral("K", 7), 0)

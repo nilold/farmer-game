@@ -15,7 +15,7 @@ func before_all():
 func before_each():
 	field = partial_double(Field).instance()
 	crop = autofree(partial_double(Crop).instance())
-	stub(crop, 'get_nutrients').to_return({})
+	stub(crop, 'get_minerals').to_return({})
 	stub(crop, 'get_field').to_return(field)
 
 
@@ -35,27 +35,27 @@ func test_inffecting():
 	assert_true(crop.has_disease(bacteria.ID))
 
 
-func test_nutrient_absorption():
+func test_mineral_absorption():
 	var pos = Vector2(5, 5)
-	var nutrient = "Na"
+	var mineral = "Na"
 	crop.index = pos
-	crop.needs = {nutrient: 10}
+	crop.needs = {mineral: 10}
 
-	var substract = autofree(field.get_soil_nutrients(pos))
-	substract.add_nutrient(nutrient, 100)
-	var original_amount = substract.nutrients[nutrient]
+	var substract = autofree(field.get_soil_minerals(pos))
+	substract.add_mineral(mineral, 100)
+	var original_amount = substract.minerals[mineral]
 
-	crop.absorve_nutrients_from_soil()
-	assert_eq(substract.nutrients[nutrient], original_amount - 10)
+	crop.absorve_minerals_from_soil()
+	assert_eq(substract.minerals[mineral], original_amount - 10)
 
 
-func test_crop_dies_if_no_nutrients():
+func test_crop_dies_if_no_minerals():
 	var pos = Vector2(5, 5)
-	var nutrient = "Na"
+	var mineral = "Na"
 	crop.index = pos
-	crop.needs = {nutrient: 10}
-	var substract = autofree(field.get_soil_nutrients(pos))
-	substract.nutrients[nutrient] = 0
+	crop.needs = {mineral: 10}
+	var substract = autofree(field.get_soil_minerals(pos))
+	substract.minerals[mineral] = 0
 
 	stub(crop, '_die').to_do_nothing()
 	stub(crop, '_update_frame').to_do_nothing()

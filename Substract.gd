@@ -1,39 +1,39 @@
 extends Node
 
-export var NUTRIENTS = ["K", "Na", "Fe", "Water"]
-export var MIN_NUTRIENT = 10
-export var MAX_NUTRIENT = 70
+export var MINERALS = ["K", "Na", "Fe"]
+export var MIN_MINERAL = 10
+export var MAX_MINERAL = 70
 
-var nutrients = {}
-
-
-func _init(randomize_nutrients: bool = false):
-	if randomize_nutrients:
-		for nutrient in NUTRIENTS:
-			nutrients[nutrient] = int(rand_range(MIN_NUTRIENT, MAX_NUTRIENT))
+var minerals = {}
 
 
-func add_nutrient(nutrient: String, quantity: int):
-	nutrients[nutrient] += quantity  #TODO: saturation
+func _init(randomize_minerals: bool = false):
+	if randomize_minerals:
+		for mineral in MINERALS:
+			minerals[mineral] = int(rand_range(MIN_MINERAL, MAX_MINERAL))
 
 
-func consume_nutrient(nutrient: String, quantity: int):
+func add_mineral(mineral: String, quantity: int):
+	minerals[mineral] += quantity  #TODO: saturation
+
+
+func consume_mineral(mineral: String, quantity: int):
 	var acquired = 0
-	if has_nutrient(nutrient):
-		var present = nutrients[nutrient]
+	if has_mineral(mineral):
+		var present = minerals[mineral]
 		if present >= quantity:
-			nutrients[nutrient] -= quantity
+			minerals[mineral] -= quantity
 			acquired = quantity
 		else:
-			nutrients[nutrient] = 0
+			minerals[mineral] = 0
 			acquired = present
 
 	return acquired
 
 
-func has_nutrient(nutrient: String):
-	return nutrient in nutrients
+func has_mineral(mineral: String):
+	return mineral in minerals
 
 
-func get_nutrients():
-	return self.nutrients
+func get_minerals():
+	return self.minerals

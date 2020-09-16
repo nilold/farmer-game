@@ -2,7 +2,7 @@ extends "res://crop/Inffectable.gd"
 
 var index: Vector2
 
-export var needs = {} setget set_needs
+export var needs = {} #setget set_needs
 export var rejects = {}  # TODO
 var total_needs = 0
 var is_dead = false
@@ -31,20 +31,20 @@ func _ready():
 	update_total_needs()
 
 
-func set_needs(new_needs):
-	needs = new_needs
-	update_total_needs()
+# func set_needs(new_needs):
+# 	needs = new_needs
+# 	update_total_needs()
 
 
 func update_total_needs():
 	total_needs = 0
-	for need in needs:
+	for need in self.needs:
 		total_needs += needs[need]
 
 
 func cycle():
 	# current_cycle += 1
-	absorve_nutrients_from_soil()
+	absorve_minerals_from_soil()
 	activate_diseases()
 	update_health()
 	_grow()
@@ -67,18 +67,18 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 			left_clicked_on_tile()
 
 
-func absorve_nutrients_from_soil():
+func absorve_minerals_from_soil():
 	if not field:
 		printerr("Crop has no field")
 		field = get_field()
 
-	var soil_substract = field.get_soil_nutrients(self.index)
-	var nutrients = self.get_nutrients()
+	var soil_substract = field.get_soil_minerals(self.index)
+	var minerals = self.get_minerals()
 
 	for n in needs:
 		var lacking = get_lacking_amount(n)
 		if lacking > 0:
-			nutrients[n] += soil_substract.consume_nutrient(n, lacking)  #TODO: all at once?
+			minerals[n] += soil_substract.consume_mineral(n, lacking)  #TODO: all at once?
 
 
 # need for testinig stubs
@@ -101,11 +101,11 @@ func update_health():
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 
-func get_lacking_amount(nutrient) -> int:
-	var nutrients = get_nutrients()
-	if not nutrient in nutrients:
-		nutrients[nutrient] = 0
-	return needs[nutrient] - nutrients[nutrient]
+func get_lacking_amount(mineral) -> int:
+	var minerals = get_minerals()
+	if not mineral in minerals:
+		minerals[mineral] = 0
+	return needs[mineral] - minerals[mineral]
 
 
 func _die():
@@ -115,8 +115,8 @@ func _die():
 
 
 func _grow():
-	# TODO consume self nutrients
-	# There should be info about water/nutrients consumption per unit of mass
+	# TODO consume self minerals
+	# There should be info about water/minerals consumption per unit of mass
 
 	if self.health > MINIMUM_HEALTH_TO_GROW:  #TODO: smarter condition(s)
 		self.stage_maturity += 1

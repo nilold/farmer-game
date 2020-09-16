@@ -1,0 +1,77 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://crop/item_crop.tscn" type="PackedScene" id=1]
+[ext_resource path="res://GUI/TabContainer.gd" type="Script" id=2]
+[ext_resource path="res://Buildings/item_house1.tscn" type="PackedScene" id=3]
+
+[node name="Item_Select" type="Control"]
+margin_right = 40.0
+margin_bottom = 40.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TabContainer" type="TabContainer" parent="."]
+anchor_right = 5.2
+anchor_bottom = 3.6
+script = ExtResource( 2 )
+__meta__ = {
+"_edit_use_anchors_": true
+}
+
+[node name="Crops" type="Tabs" parent="TabContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/Crops"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -4.0
+margin_right = -4.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Crops/ScrollContainer"]
+margin_right = 16.0
+margin_bottom = 16.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/Crops/ScrollContainer/VBoxContainer"]
+margin_right = 16.0
+margin_bottom = 16.0
+
+[node name="item_crop" parent="TabContainer/Crops/ScrollContainer/VBoxContainer/HBoxContainer" instance=ExtResource( 1 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 16.0
+margin_bottom = 16.0
+
+[node name="Buildings" type="Tabs" parent="TabContainer"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 4.0
+margin_top = 32.0
+margin_right = -4.0
+margin_bottom = -4.0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="TabContainer/Buildings"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TabContainer/Buildings/ScrollContainer"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="TabContainer/Buildings/ScrollContainer/VBoxContainer"]
+
+[node name="item_house1" parent="TabContainer/Buildings/ScrollContainer/VBoxContainer/HBoxContainer" instance=ExtResource( 3 )]
+margin_right = 16.0
+margin_bottom = 16.0
+[connection signal="mouse_entered" from="TabContainer" to="TabContainer" method="_on_TabContainer_mouse_entered"]
+[connection signal="mouse_exited" from="TabContainer" to="TabContainer" method="_on_TabContainer_mouse_exited"]
