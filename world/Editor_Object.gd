@@ -2,7 +2,7 @@ extends Node2D
 
 var can_place = true
 var is_panning = true
-onready var ground = get_node("/root/World/Ground/Field")
+onready var ground = get_node("/root/World/Ground")
 onready var field = ground.get_node("Field")
 onready var editor = get_node("/root/World/cam_container")
 onready var editor_cam = editor.get_node("Camera2D")
@@ -10,6 +10,7 @@ onready var editor_cam = editor.get_node("Camera2D")
 var current_item
 
 export var cam_speed = 10
+export var cam_zoom_speed = 0.1
 
 func _ready():
 	editor_cam.current = true
@@ -25,7 +26,6 @@ func _process(_delta):
 			_place_on_ground(global_position)
 
 	move_editor()
-	is_panning = Input.is_action_pressed("mb_middle")
 
 #TODO: actually we should have another TileMap to place buildings and other stuff
 # because it shouldnt be so free
@@ -40,7 +40,7 @@ func _place_on_field(global_position):
 	field.add_crop_at(new_crop, global_position)
 
 
-#TODO: move this logic to elsewhere
+#TODO: move this logic to elsewhere ========================================================
 func move_editor():
 	if Input.is_action_pressed("w"):
 		editor.global_position.y -= cam_speed
@@ -50,3 +50,17 @@ func move_editor():
 		editor.global_position.y += cam_speed
 	if Input.is_action_pressed("d"):
 		editor.global_position.x += cam_speed
+
+func _unhandled_input(event):
+	#TODO: handle max/min zoom
+	if event is InputEventMouseButton and event.is_pressed():
+		if event.button_index == BUTTON_WHEEL_UP:
+			editor_cam.zoom -= Vector2(cam_zoom_speed, cam_zoom_speed)
+		if event.button_index == BUTTON_WHEEL_DOWN:
+			editor_cam.zoom += Vector2(cam_zoom_speed, cam_zoom_speed)
+
+	if event is InputEventMouseMotion and  Input.is_action_pressed("mb_middle"):
+		editor.global_position -= event.relative * editor_cam.zoom
+
+
+# ======================================================================================
