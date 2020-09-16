@@ -16,3 +16,8 @@
 script = ExtResource( 4 )
 
 [node name="Sprite" type="Sprite" parent="Editor_Object"]
+
+[node name="cam_container" type="Node2D" parent="."]
+position = Vector2( 480, 400 )
+
+[node name="Camera2D" type="Camera2D" parent="cam_container"]
