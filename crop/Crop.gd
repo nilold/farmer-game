@@ -116,7 +116,7 @@ func _die():
 
 func _grow():
 	# TODO consume self minerals
-	# There should be info about water/minerals consumption per unit of mass
+	# There must be info about water/minerals consumption per unit of mass
 
 	if self.health > MINIMUM_HEALTH_TO_GROW:  #TODO: smarter condition(s)
 		self.stage_maturity += 1
