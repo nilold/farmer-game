@@ -38,9 +38,6 @@ script = ExtResource( 2 )
 needs = {
 "Na": 30
 }
-rejects = {
-"K": 10
-}
 
 [node name="Sprite" type="AnimatedSprite" parent="."]
 material = SubResource( 1 )

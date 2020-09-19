@@ -22,10 +22,10 @@ var is_dead = false
 onready var field = get_parent().get_parent()
 
 enum stages { SEED, GROWING, VEGETATIVE, REPRODUCTIVE, LAST }
-var stages_cycles = {
-	stages.SEED: 1, stages.GROWING: 10, stages.VEGETATIVE: 3, stages.REPRODUCTIVE: 3
+export var stages_cycles = {
+	stages.SEED: 1, stages.GROWING: 10, stages.VEGETATIVE: 6, stages.REPRODUCTIVE: 3
 }
-export var current_stage = stages.SEED
+export var current_stage = stages.SEED setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
 var stage_maturity = 0
 
@@ -53,6 +53,11 @@ func cycle():
 
 func get_minerals():
 	return self.substract.get_minerals()
+
+
+func _set_current_stage(new_stage):
+	current_stage = new_stage
+	sprite.frame = current_stage
 
 
 func left_clicked_on_tile():
@@ -124,6 +129,7 @@ func _take_damage_by_rejected_minerals():
 func _take_damage(bad_amount, good_amount):
 	if bad_amount == 0 or good_amount == 0:
 		return
+
 	var damage = float(bad_amount) / good_amount
 	self.health -= damage * self.health * damage_amortization
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
@@ -150,16 +156,13 @@ func _grow():
 		self.stage_maturity += 1
 
 	if self.stage_maturity >= stages_cycles[current_stage]:
-		current_stage += 1
-		if current_stage == stages.LAST:
-			current_stage = stages.VEGETATIVE
+		var new_stage = current_stage + 1
+		if new_stage == stages.LAST:
+			new_stage = stages.VEGETATIVE
 
-		_update_frame()
+		_set_current_stage(new_stage)
+
 		self.stage_maturity = 0
-
-
-func _update_frame():
-	sprite.frame = current_stage
 
 
 func _update_yield():
