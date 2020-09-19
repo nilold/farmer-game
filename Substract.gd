@@ -1,9 +1,9 @@
 extends Node
 
 export var MINERALS = ["K", "Na", "Fe"]
-export var SATURATION = 200
-export var MIN_RANDON_MINERAL = 10
-export var MAX_RANDOM_MINERAL = 70
+export var SATURATION = 600
+export var MIN_RANDON_MINERAL = 100
+export var MAX_RANDOM_MINERAL = 500
 
 var minerals = {}
 

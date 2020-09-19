@@ -28,13 +28,13 @@ export var stages_cycles = {
 export var current_stage = stages.SEED setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
 var stage_maturity = 0
+export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
 
 export var MAX_YIELD = 100
 var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.REPRODUCTIVE]
 export var MINIMUN_HEALTH_TO_MAX_YIELD = 70
 export var current_yield = 0
 export var current_yield_limit = 100
-
 
 # func _ready():
 # 	print_debug("new Node at " + str(index))
@@ -58,6 +58,7 @@ func get_minerals():
 func _set_current_stage(new_stage):
 	current_stage = new_stage
 	_update_frame()
+
 
 func _update_frame():
 	sprite.frame = current_stage
@@ -152,20 +153,25 @@ func _die():
 
 
 func _grow():
-	# TODO consume self minerals
-	# There must be info about water/minerals consumption per unit of mass
-
 	if self.health > MINIMUM_HEALTH_TO_GROW:  #TODO: smarter condition(s)
 		self.stage_maturity += 1
 
 	if self.stage_maturity >= stages_cycles[current_stage]:
+		self.stage_maturity = 0
 		var new_stage = current_stage + 1
+
 		if new_stage == stages.LAST:
 			new_stage = stages.VEGETATIVE
 
 		_set_current_stage(new_stage)
+		_consume_self_minerals()
 
-		self.stage_maturity = 0
+
+func _consume_self_minerals():
+	for n in needs:
+		var _consumed_mineral = self.substract.consume_mineral(
+			n, MINERAL_CONSUMPTION_PER_GROWING_CYCLE
+		)
 
 
 func _update_yield():

@@ -10,15 +10,7 @@ var crops = {}
 
 var soil_substracts = {}
 
-
-# Called when the node enters the scene tree for the first time.
-func _ready():
-	# var _err = Crop.connect("crop_died", self, "on_crop_died")
-	pass
-
-
 var pressed = false
-
 
 func on_crop_died(index: Vector2):
 	crops[index.x].erase(index.y)
@@ -36,7 +28,7 @@ func _input(event):
 				stats.mouse_states.SPREAD:
 					spread_diseases()
 
-	if event is InputEventKey and stats.mouse_state == stats.mouse_states.CYCLE:
+	if event is InputEventKey and Input.is_action_just_pressed("c"):
 		cycle()
 
 	# if click_to_add_crop(event):
