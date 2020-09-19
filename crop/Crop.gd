@@ -57,6 +57,9 @@ func get_minerals():
 
 func _set_current_stage(new_stage):
 	current_stage = new_stage
+	_update_frame()
+
+func _update_frame():
 	sprite.frame = current_stage
 
 

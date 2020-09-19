@@ -69,7 +69,7 @@ func test_crop_dies_if_too_much_reject_minerals():
 	var pos = Vector2(5, 5)
 	var mineral = "Fe"
 	crop.index = pos
-	crop.rejects = {mineral: 5}
+	crop.tolerates = {mineral: 5}
 	stub(crop, '_die').to_do_nothing()
 
 	var substract = autofree(field.get_soil_minerals(pos))
