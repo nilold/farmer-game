@@ -36,8 +36,8 @@ export var current_yield = 0
 export var current_yield_limit = 100
 
 
-func _ready():
-	print_debug("new Node at " + str(index))
+# func _ready():
+# 	print_debug("new Node at " + str(index))
 
 
 func cycle():
