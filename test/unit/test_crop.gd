@@ -17,7 +17,7 @@ func before_each():
 	crop = autofree(partial_double(Crop).instance())
 	stub(crop, 'get_minerals').to_return({})
 	stub(crop, 'get_field').to_return(field)
-
+	stub(crop, '_update_frame').to_do_nothing()
 
 func after_each():
 	pass
@@ -29,7 +29,7 @@ func after_all():
 
 func test_inffecting():
 	var bacteria = double(Bacteria).new()
-	stub(crop, 'inffection_succeeds').to_return(true)
+	stub(crop, '_inffection_succeeds').to_return(true)
 
 	crop.inffect(bacteria)
 	assert_true(crop.has_disease(bacteria.ID))
@@ -45,8 +45,8 @@ func test_mineral_absorption():
 	substract.add_mineral(mineral, 100)
 	var original_amount = substract.minerals[mineral]
 
-	crop.absorve_minerals_from_soil()
-	assert_eq(substract.minerals[mineral], original_amount - 10)
+	crop.cycle()
+	assert_eq(substract.minerals[mineral], original_amount - crop.absorption_flow)
 
 
 func test_crop_dies_if_no_minerals():
@@ -54,14 +54,32 @@ func test_crop_dies_if_no_minerals():
 	var mineral = "Na"
 	crop.index = pos
 	crop.needs = {mineral: 10}
+	stub(crop, '_die').to_do_nothing()
+
 	var substract = autofree(field.get_soil_minerals(pos))
 	substract.minerals[mineral] = 0
 
-	stub(crop, '_die').to_do_nothing()
-	stub(crop, '_update_frame').to_do_nothing()
-	for _i in range(20):
-		crop.cycle()
+	# The amount of cycle necessary to die depends on the damage amortization
+	crop.damage_amortization = 1;
+	crop.cycle()
 
 	assert_called(crop, "_die")
 	
+func test_crop_dies_if_too_much_reject_minerals():
+	var pos = Vector2(5, 5)
+	var mineral = "Fe"
+	crop.index = pos
+	crop.rejects = {mineral: 5}
+	stub(crop, '_die').to_do_nothing()
+
+	var substract = autofree(field.get_soil_minerals(pos))
+	substract.minerals[mineral] = 10
+
+	# The amount of cycle necessary to die depends on the damage amortization
+	# and teh rejection amount
+	crop.damage_amortization = 1;
+	crop.cycle()
+	crop.cycle()
+	
+	assert_called(crop, "_die")
 	

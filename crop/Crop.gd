@@ -2,10 +2,23 @@ extends "res://crop/Inffectable.gd"
 
 var index: Vector2
 
-export var needs = {} #setget set_needs
-export var rejects = {}  # TODO
-var total_needs = 0
+####################################################################
+# Minerals absorption
+#
+# On every cycle, the crop will absorb {absorption_flow} of each
+# mineral in the ground.
+#
+export var needs = {}  #setget set_needs
+export var tolerates = {}  # the less, the worse, but 0 = full tolerance
+export var absorption_flow = 5
+# var total_needs = 0
+####################################################################
+# Health control
+#
+export var damage_amortization = 0.8
 var is_dead = false
+####################################################################
+
 onready var field = get_parent().get_parent()
 
 enum stages { SEED, GROWING, VEGETATIVE, REPRODUCTIVE, LAST }
@@ -22,35 +35,24 @@ export var MINIMUN_HEALTH_TO_MAX_YIELD = 70
 export var current_yield = 0
 export var current_yield_limit = 100
 
-# func _init(parent_field = null):
-# 	self.field = parent_field
-
 
 func _ready():
 	print_debug("new Node at " + str(index))
-	update_total_needs()
-
-
-# func set_needs(new_needs):
-# 	needs = new_needs
-# 	update_total_needs()
-
-
-func update_total_needs():
-	total_needs = 0
-	for need in self.needs:
-		total_needs += needs[need]
 
 
 func cycle():
 	# current_cycle += 1
-	absorve_minerals_from_soil()
-	activate_diseases()
-	update_health()
+	_absorve_minerals_from_soil()
+	_activate_diseases()
+	_update_health()
 	_grow()
 	_update_yield()
 	if self.health < 1:
 		_die()
+
+
+func get_minerals():
+	return self.substract.get_minerals()
 
 
 func left_clicked_on_tile():
@@ -67,7 +69,7 @@ func _on_Crop_input_event(_viewport, event, _shape_idx):
 			left_clicked_on_tile()
 
 
-func absorve_minerals_from_soil():
+func _absorve_minerals_from_soil():
 	if not field:
 		printerr("Crop has no field")
 		field = get_field()
@@ -75,10 +77,10 @@ func absorve_minerals_from_soil():
 	var soil_substract = field.get_soil_minerals(self.index)
 	var minerals = self.get_minerals()
 
-	for n in needs:
-		var lacking = get_lacking_amount(n)
-		if lacking > 0:
-			minerals[n] += soil_substract.consume_mineral(n, lacking)  #TODO: all at once?
+	for m in soil_substract.minerals:
+		if not m in minerals:
+			minerals[m] = 0
+		minerals[m] += soil_substract.consume_mineral(m, absorption_flow)
 
 
 # need for testinig stubs
@@ -86,26 +88,52 @@ func get_field():
 	return get_parent().get_parent()
 
 
-func update_health():
-	#TODO[1]
-	if total_needs <= 0:
+func _update_health():
+	_take_damage_by_lacking_minerals()
+	_take_damage_by_rejected_minerals()
+
+
+func _take_damage_by_lacking_minerals():
+	if len(needs.keys()) == 0:
 		return
 
 	var total_lacking = 0
+	var total_needs = 0
 
 	for n in needs:
-		total_lacking += get_lacking_amount(n)
+		total_needs += needs[n]
+		total_lacking += needs[n] - _get_present_amount(n)
 
-	var damage = float(total_lacking) / total_needs  # 0 to 1
-	self.health -= damage * self.health * 0.5  # amortization
+	_take_damage(total_lacking, total_needs)
+
+
+func _take_damage_by_rejected_minerals():
+	if len(tolerates.keys()) == 0:
+		return
+
+	var total_rejection = 0
+	var total_extra = 0
+
+	for r in tolerates:
+		total_rejection += tolerates[r]
+		total_extra += _get_present_amount(r)
+
+	_take_damage(total_extra, total_rejection)
+
+
+func _take_damage(bad_amount, good_amount):
+	if bad_amount == 0 or good_amount == 0:
+		return
+	var damage = float(bad_amount) / good_amount
+	self.health -= damage * self.health * damage_amortization
 	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 
-func get_lacking_amount(mineral) -> int:
+func _get_present_amount(mineral) -> int:
 	var minerals = get_minerals()
 	if not mineral in minerals:
 		minerals[mineral] = 0
-	return needs[mineral] - minerals[mineral]
+	return minerals[mineral]
 
 
 func _die():
@@ -129,16 +157,18 @@ func _grow():
 		_update_frame()
 		self.stage_maturity = 0
 
+
 func _update_frame():
 	sprite.frame = current_stage
+
 
 func _update_yield():
 	# TODO add tests
 	_update_yield_limit()
 	if current_stage == stages.REPRODUCTIVE:
-		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
+		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH  #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
 
 
 func _update_yield_limit():
 	if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
-		current_yield_limit = MAX_YIELD * health / MAX_HEALTH #TODO[1]
+		current_yield_limit = MAX_YIELD * health / MAX_HEALTH  #TODO[1]
