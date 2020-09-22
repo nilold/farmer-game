@@ -100,6 +100,7 @@ func get_field():
 func _update_health():
 	_take_damage_by_lacking_minerals()
 	_take_damage_by_rejected_minerals()
+	_recover()
 
 
 func _take_damage_by_lacking_minerals():
@@ -130,13 +131,9 @@ func _take_damage_by_rejected_minerals():
 	_take_damage(total_extra, total_rejection)
 
 
-func _take_damage(bad_amount, good_amount):
-	if bad_amount == 0 or good_amount == 0:
-		return
-
-	var damage = float(bad_amount) / good_amount
-	self.health -= damage * self.health * damage_amortization
-	self.health = int(clamp(self.health, 0, MAX_HEALTH))
+func _recover():
+	#TODO
+	pass
 
 
 func _get_present_amount(mineral) -> int:
@@ -144,6 +141,15 @@ func _get_present_amount(mineral) -> int:
 	if not mineral in minerals:
 		minerals[mineral] = 0
 	return minerals[mineral]
+
+
+func _take_damage(bad_amount, good_amount):
+	if bad_amount == 0 or good_amount == 0:
+		return
+
+	var damage = float(bad_amount) / good_amount
+	self.health -= damage * self.health * damage_amortization
+	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 
 func _die():
