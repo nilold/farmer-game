@@ -5,13 +5,24 @@ var index: Vector2
 ####################################################################
 # Minerals absorption
 #
-# On every cycle, the crop will absorb {absorption_flow} of each
-# mineral in the ground.
-#
 export var needs = {}  #setget set_needs
 export var tolerates = {}  # the less, the worse, but 0 = full tolerance
 export var absorption_flow = 5
-# var total_needs = 0
+####################################################################
+# Development
+#
+var leaf_rate = 0
+export var leaf_rate_setpoint = 100
+
+####################################################################
+# Productity
+#
+var total_fruits = 0
+var mature_fruits = 0;
+var green_fruits = 0;
+var rot_fruits = 0;
+var avg_fruit_size = 0;
+var avg_fruit_quality = 0;
 ####################################################################
 # Health control
 #
@@ -21,9 +32,9 @@ var is_dead = false
 
 onready var field = get_parent().get_parent()
 
-enum stages { SEED, GROWING, VEGETATIVE, REPRODUCTIVE, LAST }
+enum stages { SEED, GROWING, PRODUCTIVE, LAST }
 export var stages_cycles = {
-	stages.SEED: 1, stages.GROWING: 10, stages.VEGETATIVE: 6, stages.REPRODUCTIVE: 3
+	stages.SEED: 1, stages.GROWING: 10, stages.PRODUCTIVE: 3
 }
 export var current_stage = stages.SEED setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
@@ -31,7 +42,7 @@ var stage_maturity = 0
 export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
 
 export var MAX_YIELD = 100
-var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.REPRODUCTIVE]
+var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.PRODUCTIVE]
 export var MINIMUN_HEALTH_TO_MAX_YIELD = 70
 export var current_yield = 0
 export var current_yield_limit = 100
@@ -103,6 +114,10 @@ func _update_health():
 	_recover()
 
 
+func _get_nutrition_status():
+	pass
+
+
 func _take_damage_by_lacking_minerals():
 	if len(needs.keys()) == 0:
 		return
@@ -114,7 +129,8 @@ func _take_damage_by_lacking_minerals():
 		total_needs += needs[n]
 		total_lacking += needs[n] - _get_present_amount(n)
 
-	_take_damage(total_lacking, total_needs)
+	var damage = _take_damage(total_lacking, total_needs)
+	_damage_health(damage)
 
 
 func _take_damage_by_rejected_minerals():
@@ -128,8 +144,13 @@ func _take_damage_by_rejected_minerals():
 		total_rejection += tolerates[r]
 		total_extra += _get_present_amount(r)
 
-	_take_damage(total_extra, total_rejection)
+	var damage = _take_damage(total_extra, total_rejection)
+	_damage_health(damage)
 
+
+func _damage_health(damage):
+	self.health -= damage * self.health * damage_amortization
+	self.health = int(clamp(self.health, 0, MAX_HEALTH))
 
 func _recover():
 	#TODO
@@ -145,11 +166,9 @@ func _get_present_amount(mineral) -> int:
 
 func _take_damage(bad_amount, good_amount):
 	if bad_amount == 0 or good_amount == 0:
-		return
+		return 0
 
-	var damage = float(bad_amount) / good_amount
-	self.health -= damage * self.health * damage_amortization
-	self.health = int(clamp(self.health, 0, MAX_HEALTH))
+	return float(bad_amount) / good_amount
 
 
 func _die():
@@ -183,10 +202,11 @@ func _consume_self_minerals():
 func _update_yield():
 	# TODO add tests
 	_update_yield_limit()
-	if current_stage == stages.REPRODUCTIVE:
+	if current_stage == stages.PRODUCTIVE:
 		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH  #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
 
 
 func _update_yield_limit():
-	if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
-		current_yield_limit = MAX_YIELD * health / MAX_HEALTH  #TODO[1]
+	pass
+	# if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
+	# 	current_yield_limit = MAX_YIELD * health / MAX_HEALTH  #TODO[1]

@@ -1,6 +1,7 @@
 extends "res://addons/gut/test.gd"
 
 var Crop = preload("res://crop/Crop.tscn")
+var Substract = load("res://Substract.gd")
 var Field = "res://Field/Field.tscn"
 var Bacteria = "res://Disease/Bacteria.gd"
 
@@ -15,6 +16,7 @@ func before_all():
 func before_each():
 	field = partial_double(Field).instance()
 	crop = autofree(partial_double(Crop).instance())
+	crop.substract = autofree(Substract.new())
 	stub(crop, 'get_minerals').to_return({})
 	stub(crop, 'get_field').to_return(field)
 	stub(crop, '_update_frame').to_do_nothing()
