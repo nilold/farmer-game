@@ -1,9 +1,10 @@
 extends TileMap
 
+onready var world = get_parent().get_parent()
+onready var Crops = $Crops
 var Crop = preload("res://crop/Crop.tscn")
 var Bacteria = preload("res://Disease/Bacteria.tscn")
 var Substract = preload("res://Substract.gd")
-onready var Crops = $Crops
 var stats = Stats
 
 var crops = {}
@@ -11,6 +12,7 @@ var crops = {}
 var soil_substracts = {}
 
 var pressed = false
+
 
 func on_crop_died(index: Vector2):
 	crops[index.x].erase(index.y)
@@ -31,17 +33,6 @@ func _input(event):
 	if event is InputEventKey and Input.is_action_just_pressed("c"):
 		cycle()
 
-	# if click_to_add_crop(event):
-	# 	add_crop()
-
-
-# func click_to_add_crop(event):
-# 	return (
-# 		event is InputEventMouseMotion
-# 		and pressed
-# 		and stats.mouse_state == stats.mouse_states.ADD_CROP
-# 	)
-
 
 func cycle():
 	spread_diseases()
@@ -58,23 +49,13 @@ func add_crop_at(newCrop, global_position):
 	var mapPos = world_to_map(global_position)
 	newCrop.position = map_to_world(mapPos)
 	newCrop.index = mapPos
-	
+
 	if not newCrop.index.x in crops:
 		crops[newCrop.index.x] = {}
 
 	if not newCrop.index.y in crops[newCrop.index.x]:
 		Crops.add_child(newCrop)
 		crops[newCrop.index.x][newCrop.index.y] = newCrop
-
-
-# func place_object_at(global_position):
-# 	var newCrop = Crop.instance()
-# 	# newCrop._init(self) #TODO: remove manual constructor call
-# 	newCrop.needs = {"Na": 7}
-	
-# 	newCrop.position = map_to_world(mapPos)
-# 	newCrop.index = mapPos
-# 	return newCrop
 
 
 func remove_crop(_crop):
@@ -127,7 +108,7 @@ func get_indexes_to_inffect():
 	return indexes_to_inffect
 
 
-func get_soil_minerals(index: Vector2):
+func get_soil_substract(index: Vector2):
 	if not soil_has_substract(index):
 		create_substract_at(index)
 
@@ -139,6 +120,10 @@ func soil_has_substract(index: Vector2):
 
 
 func create_substract_at(index: Vector2):
+	if not Substract:
+		printerr("ERROR Field has no Substract reference")
+		return
+
 	if not index.x in soil_substracts:
 		soil_substracts[index.x] = {}
 	soil_substracts[index.x][index.y] = Substract.new(true)
