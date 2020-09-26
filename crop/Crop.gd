@@ -238,10 +238,11 @@ func _grow():
 
 
 func _grow_leafs():
-	var growth_pressure = leaf_rate / leaf_rate_setpoint
-	var recquired_energy = leaf_growth_energy_consumption * growth_pressure
-	var acquired_energy = _convert_energy(recquired_energy)
-	# var leaf_rate = clamp()
+	var growth_pressure = (leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint # 0 to 1
+	var recquired_energy = leaf_growth_energy_consumption * growth_pressure # 0 to leaf_growth_energy_consumption
+	var acquired_energy = _convert_energy(recquired_energy) # 0 to leaf_growth_energy_consumption
+	var growth_force = (acquired_energy/recquired_energy) * growth_pressure
+	leaf_rate = clamp(leaf_rate * (1+ growth_force), leaf_rate, leaf_rate_setpoint)
 
 
 func _grow_fruits():

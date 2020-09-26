@@ -147,3 +147,21 @@ func test_partial_energy_conversion_with_few_leafs():
 
 #####################################################################################
 # Growth test
+
+func test_leafs_wont_grow_without_sun():
+	pass
+
+func test_leafs_wont_grow_without_water():
+	pass
+
+func test_leafs_wont_grow_without_nutrients():
+	pass
+
+func test_leafs_wont_grow_if_in_setpoint():
+	pass
+
+func test_leafs_grow_with_good_conditions():
+	pass
+
+func test_leafs_grow_faster_when_less_leafs():
+	pass
