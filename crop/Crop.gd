@@ -13,7 +13,9 @@ export var absorption_flow = 5
 #
 var leaf_rate = 0
 export var leaf_rate_setpoint = 100  # Value in which happens 100% of sun energy conversion
-export var leaf_growth_energy_consumption = 50
+export var leaf_growth_energy_consumption = 30
+export var leaf_growth_mineral_consumption = 10
+export var min_leaf_rate_to_grow_sprouts = 70
 ####################################################################
 # Energy
 #
@@ -23,12 +25,17 @@ export var sun_strenght_per_energy = 10
 ####################################################################
 # Productity
 #
+export var fruits_setpoint = 100
+export var fruits_growth_energy_consumption = 50
+export var fruits_growth_mineral_consumption = 50
+var sprouts = 0
 var total_fruits = 0
 var mature_fruits = 0
 var green_fruits = 0
 var rot_fruits = 0
 var avg_fruit_size = 0
 var avg_fruit_quality = 0
+var total_sprouts = 0
 ####################################################################
 # Health control
 #
@@ -38,9 +45,11 @@ var is_dead = false
 
 onready var field = get_parent().get_parent()
 
-enum stages { SEED, GROWING, PRODUCTIVE, LAST }
-export var stages_cycles = {stages.SEED: 1, stages.GROWING: 10, stages.PRODUCTIVE: 3}
-export var current_stage = stages.SEED setget _set_current_stage
+enum stages { INITIAL, DEVELOPMNENT, FLOWERY, PRODUCTION, LAST }
+export var stages_cycles = {
+	stages.INITIAL: 100, stages.DEVELOPMNENT: 50, stages.FLOWERY: 10, stages.PRODUCTION: 40
+}
+export var current_stage = stages.INITIAL setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
 var stage_maturity = 0
 export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
@@ -114,21 +123,21 @@ func get_minerals():
 
 #################################################################################
 # Energy
-func _convert_energy(recquired):
+func _convert_energy(required):
 	#TODO: consume any nutrients?
-	var acquired = _convert_water_to_energy(recquired)
+	var acquired = _convert_water_to_energy(required)
 	acquired = _convert_sun_to_energy(acquired)
 	return acquired
 
 
-func _convert_water_to_energy(recquired):
-	var water = _consume_soil_water(water_per_energy * recquired)
-	return clamp(recquired, 0, water / water_per_energy)
-	
-	
-func _convert_sun_to_energy(recquired):
+func _convert_water_to_energy(required):
+	var water = _consume_soil_water(water_per_energy * required)
+	return clamp(required, 0, water / water_per_energy)
+
+
+func _convert_sun_to_energy(required):
 	var available_sun = _sun() * leaf_rate / leaf_rate_setpoint
-	return clamp(recquired, 0, available_sun / sun_strenght_per_energy)
+	return clamp(required, 0, available_sun / sun_strenght_per_energy)
 
 
 func _set_current_stage(new_stage):
@@ -233,27 +242,88 @@ func _die():
 #################################################################################
 # Development
 func _grow():
+	match current_stage:
+		stages.INITIAL:
+			_develop_initial()
+		stages.DEVELOPMNENT:
+			_develop()
+		stages.FLOWERY:
+			_flower()
+		stages.PRODUCTION:
+			_produce()
+
+	stage_maturity += 1
+	if stage_maturity >= stages_cycles[current_stage]:
+		stage_maturity = 0
+		current_stage += 1
+	if current_stage == stages.LAST:
+		current_stage = stages.DEVELOPMNENT
+
+
+func _develop_initial():
 	_grow_leafs()
-	_grow_fruits()
+
+
+func _develop():
+	if leaf_rate >= min_leaf_rate_to_grow_sprouts:
+		_grow_sprouts()  # higher priority
+	_grow_leafs()
+
+
+func _flower():
+	pass
+
+
+func _produce():
+	pass
 
 
 func _grow_leafs():
-	var growth_pressure = (leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint # 0 to 1
-	var recquired_energy = leaf_growth_energy_consumption * growth_pressure # 0 to leaf_growth_energy_consumption
-	var acquired_energy = _convert_energy(recquired_energy) # 0 to leaf_growth_energy_consumption
-	var growth_force = (acquired_energy/recquired_energy) * growth_pressure
-	leaf_rate = clamp(leaf_rate * (1+ growth_force), leaf_rate, leaf_rate_setpoint)
+	var growth_pressure = ((leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint) * 0.5  # 0 to 0.5 (it seemed to fast for me)
+	var required_energy = growth_pressure * leaf_growth_energy_consumption  # 0 to leaf_growth_energy_consumption
+	var required_mineral = growth_pressure * leaf_growth_mineral_consumption  # 0 to leaf_growth_mineral_consumption
+	var acquired_energy = _convert_energy(required_energy)  # 0 to leaf_growth_energy_consumption
+	var consumed_minerals = _consume_self_minerals(required_mineral)
+
+	var growth_force = (
+		growth_pressure
+		* (acquired_energy / required_energy)
+		* (consumed_minerals / required_mineral)
+	)  # 0 to 1  # 0 to 1 sqrd
+
+	leaf_rate = clamp(leaf_rate * (1 + growth_force), leaf_rate, leaf_rate_setpoint)
+
+
+func _grow_sprouts():
+	var growth_pressure = ((fruits_setpoint - sprouts) / fruits_setpoint) * 0.5  # 0 to 0.5 (it seemed to fast for me)
+	var required_energy = growth_pressure * fruits_growth_energy_consumption  # 0 to fruits_growth_energy_consumption
+	var required_mineral = growth_pressure * fruits_growth_mineral_consumption  # 0 to fruits_growth_mineral_consumption
+	var acquired_energy = _convert_energy(required_energy)  # 0 to fruits_growth_energy_consumption
+	var consumed_minerals = _consume_self_minerals(required_mineral)
+
+	var growth_force = (
+		growth_pressure
+		* (acquired_energy / required_energy)
+		* (consumed_minerals / required_mineral)
+	)  # 0 to 1  # 0 to 1 sqrd
+
+	sprouts = clamp(sprouts * (1 + growth_force), sprouts, fruits_setpoint)
 
 
 func _grow_fruits():
 	pass
 
 
-func _consume_self_minerals():
+func _consume_self_minerals(amount = MINERAL_CONSUMPTION_PER_GROWING_CYCLE):
+	var avg_consumed = 0
+	var need_n = 0
+
 	for n in needs:
-		var _consumed_mineral = self.substract.consume_mineral(
-			n, MINERAL_CONSUMPTION_PER_GROWING_CYCLE
-		)
+		need_n += 1
+		avg_consumed += self.substract.consume_mineral(n, amount)
+
+	avg_consumed /= need_n
+	return avg_consumed
 
 
 #################################################################################
