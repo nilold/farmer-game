@@ -36,10 +36,11 @@ extents = Vector2( 8, 8 )
 [node name="Crop" type="Area2D"]
 script = ExtResource( 2 )
 needs = {
-"K": 3,
-"Na": 2
+"K": 0.6,
+"N": 0.8,
+"P": 0.4
 }
-absorption_flow = 10
+absorption_flow = 3
 stages_cycles = {
 0: 20,
 1: 50,

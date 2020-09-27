@@ -2,7 +2,7 @@ extends Node
 
 # #############################################################################
 # Minerals
-export var MINERALS = ["K", "Na", "Fe"]
+export var MINERALS = ["N", "P", "K", "Fe"]
 export var MINERAL_SATURATION = 600
 export var MIN_RANDON_MINERAL = 100
 export var MAX_RANDOM_MINERAL = 500

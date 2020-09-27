@@ -80,7 +80,6 @@ func cycle():
 	_activate_diseases()
 	_update_health()
 	_grow()
-	_update_yield()
 
 	stage_maturity += 1
 	if stage_maturity >= stages_cycles[current_stage]:
@@ -358,18 +357,7 @@ func _consume_self_minerals(amount = MINERAL_CONSUMPTION_PER_GROWING_CYCLE):
 
 #################################################################################
 # Productivity
-func _update_yield():
-	# TODO add tests
-	_update_yield_limit()
-	if current_stage == stages.PRODUCTION:
-		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH  #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
-
-
-func _update_yield_limit():
-	pass
-	# if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
-	# 	current_yield_limit = MAX_YIELD * health / MAX_HEALTH  #TODO[1]
-
+# TODO
 
 #################################################################################
 # Status Watcher
@@ -391,13 +379,13 @@ func _update_static_statuses():
 
 func _update_dynamic_statuses():
 	if status_watcher:
-		notify("-------------------------------", "")
+		notify("-----------development--------------", "")
 		notify("minerals", get_minerals())
 		notify("health", health)
 		notify("stage", stages.keys()[current_stage])
 		notify("stage_maturity", stage_maturity)
+		notify("------------production------------------", "")
 		notify("leafs", leaf_rate)
-		notify("-------------------------------", "")
 		notify("sprouts", sprouts)
 		notify("total_fruits", total_fruits)
 		notify("mature_fruits", mature_fruits)
