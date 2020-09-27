@@ -7,19 +7,19 @@ var index: Vector2
 #
 export var needs = {}  #setget set_needs
 export var tolerates = {}  # the less, the worse, but 0 = full tolerance
-export var absorption_flow = 5
+export var absorption_flow: float = 5
 ####################################################################
 # Development
 #
 var leaf_rate = 0
 export var leaf_rate_setpoint = 100  # Value in which happens 100% of sun energy conversion
-export var leaf_growth_energy_consumption = 30
-export var leaf_growth_mineral_consumption = 10
-export var min_leaf_rate_to_grow_sprouts = 70
+export var leaf_growth_energy_consumption: float = 30
+export var leaf_growth_mineral_consumption: float = 0.8
+export var min_leaf_rate_to_grow_sprouts: float = 70
 ####################################################################
 # Energy
 #
-export var water_per_energy = 0.02
+export var water_per_energy: float = 0.02
 export var max_sun_energy_conversion = 1000
 var total_energy_produced = 0
 var total_energy_used = 0
@@ -29,7 +29,7 @@ var total_energy_used = 0
 #
 export var fruits_setpoint = 100
 export var fruits_growth_energy_consumption = 50
-export var fruits_growth_mineral_consumption = 50
+export var fruits_growth_mineral_consumption: float = 1.0
 var sprouts = 0
 var total_fruits = 0
 var mature_fruits = 0
@@ -37,7 +37,6 @@ var green_fruits = 0
 var rot_fruits = 0
 var avg_fruit_size = 0
 var avg_fruit_quality = 0
-var total_sprouts = 0
 ####################################################################
 # Health control
 #
@@ -58,7 +57,7 @@ export var stages_cycles = {
 export var current_stage = stages.INITIAL setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
 var stage_maturity = 0
-export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
+# export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
 
 export var MAX_YIELD = 100
 var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.PRODUCTION]
@@ -87,12 +86,22 @@ func cycle():
 		current_stage += 1
 	if current_stage == stages.LAST:
 		current_stage = stages.DEVELOPMNENT
+		reset_yield()
+
 
 	_update_dynamic_statuses()
 
 	if self.health < 1:
 		_die()
 
+func reset_yield():
+	sprouts = 0
+	total_fruits = 0
+	mature_fruits = 0
+	green_fruits = 0
+	rot_fruits = 0
+	avg_fruit_size = 0
+	avg_fruit_quality = 0
 
 func _update_frame():
 	sprite.frame = current_stage
@@ -340,7 +349,7 @@ func _grow_fruits():
 	pass
 
 
-func _consume_self_minerals(amount = MINERAL_CONSUMPTION_PER_GROWING_CYCLE):
+func _consume_self_minerals(amount):
 	if len(needs) == 0:
 		return 0
 
@@ -393,7 +402,6 @@ func _update_dynamic_statuses():
 		notify("rot_fruits", rot_fruits)
 		notify("avg_fruit_size", avg_fruit_size)
 		notify("avg_fruit_quality", avg_fruit_quality)
-		notify("total_sprouts", total_sprouts)
 		notify("-------------------------------", "")
 
 

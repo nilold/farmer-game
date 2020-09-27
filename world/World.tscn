@@ -25,6 +25,7 @@ position = Vector2( 480, 400 )
 
 [node name="Weather" type="Node" parent="."]
 script = ExtResource( 3 )
+sun_strength = 250
 
 [node name="HUD" parent="." instance=ExtResource( 5 )]
 
