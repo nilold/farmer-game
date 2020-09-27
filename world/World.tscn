@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Field/Field.tscn" type="PackedScene" id=1]
 [ext_resource path="res://world/World.gd" type="Script" id=2]
 [ext_resource path="res://world/weather.gd" type="Script" id=3]
 [ext_resource path="res://world/Editor_Object.gd" type="Script" id=4]
 [ext_resource path="res://GUI/Item_Select.tscn" type="PackedScene" id=5]
+[ext_resource path="res://GUI/Statuses.tscn" type="PackedScene" id=6]
 
 [node name="World" type="Node2D"]
 script = ExtResource( 2 )
@@ -27,3 +28,11 @@ position = Vector2( 480, 400 )
 
 [node name="Weather" type="Node" parent="."]
 script = ExtResource( 3 )
+
+[node name="Statuses" parent="." instance=ExtResource( 6 )]
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 20.0
+margin_top = 20.0
+
+[editable path="Item_Select"]

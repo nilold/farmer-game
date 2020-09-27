@@ -41,7 +41,10 @@ var total_sprouts = 0
 #
 export var damage_amortization = 0.8
 var is_dead = false
-####################################################################
+
+#################################################################################
+# Status Watcher
+var status_watcher = null
 
 onready var field = get_parent().get_parent()
 
@@ -78,6 +81,9 @@ func cycle():
 	_update_health()
 	_grow()
 	_update_yield()
+
+	_update_watcher_statuses()
+
 	if self.health < 1:
 		_die()
 
@@ -260,6 +266,17 @@ func _grow():
 	if current_stage == stages.LAST:
 		current_stage = stages.DEVELOPMNENT
 
+	# notify("stage", stages.keys()[current_stage])
+
+
+func _update_watcher_statuses():
+	if status_watcher:
+		notify("index", self.index)
+		notify("stage", current_stage)
+		notify("stage_maturity", self.stage_maturity)
+		notify("leafs", self.leaf_rate)
+		notify("sprouts", self.sprouts)
+
 
 func _develop_initial():
 	_grow_leafs()
@@ -309,7 +326,7 @@ func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumpti
 	)  # 0 to 1  # 0 to 1 sqrd
 
 
-func _grow_sprouts(): # TODO: add tests
+func _grow_sprouts():  # TODO: add tests
 	var growth_pressure = float(fruits_setpoint - sprouts) / fruits_setpoint
 	if growth_pressure == 0:
 		return
@@ -353,3 +370,21 @@ func _update_yield_limit():
 	pass
 	# if current_stage == stages.VEGETATIVE and health < MINIMUN_HEALTH_TO_MAX_YIELD:
 	# 	current_yield_limit = MAX_YIELD * health / MAX_HEALTH  #TODO[1]
+
+
+#################################################################################
+# Status Watcher
+
+
+func set_watcher(watcher):
+	self.status_watcher = watcher
+	_update_watcher_statuses()
+
+
+func remove_watcher():
+	self.status_watcher = null
+
+
+func notify(key: String, value):
+	if status_watcher:
+		status_watcher.set_item(key, str(value))

@@ -13,6 +13,8 @@ var soil_substracts = {}
 
 var pressed = false
 
+var watching_crop = null
+
 
 func on_crop_died(index: Vector2):
 	crops[index.x].erase(index.y)
@@ -29,6 +31,8 @@ func _input(event):
 					add_disease()
 				stats.mouse_states.SPREAD:
 					spread_diseases()
+				stats.mouse_states.WATCH:
+					watch()
 
 	if event is InputEventKey and Input.is_action_just_pressed("c"):
 		cycle()
@@ -62,12 +66,24 @@ func remove_crop(_crop):
 	pass
 
 
+func watch():
+	if watching_crop:
+		watching_crop.remove_watcher()
+	var crop = get_crop_at_mouse_pos()
+	if crop:
+		watching_crop = crop
+		crop.set_watcher(world.get_watcher())
+
 func add_disease():
-	var crop_index = world_to_map(get_global_mouse_position())
-	var crop = crops[crop_index.x][crop_index.y]
+	var crop = get_crop_at_mouse_pos()
 	if crop:
 		crop.inffect(Bacteria.instance())
 
+
+func get_crop_at_mouse_pos():
+	var crop_index = world_to_map(get_global_mouse_position())
+	if crop_index.x in crops and crop_index.y in crops[crop_index.x]:
+		return crops[crop_index.x][crop_index.y]
 
 func spread_diseases():
 	var indexes_to_inffect = get_indexes_to_inffect()
