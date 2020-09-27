@@ -8,12 +8,12 @@ var Substract = preload("res://Substract.gd")
 var stats = Stats
 
 var crops = {}
-
 var soil_substracts = {}
 
 var pressed = false
 
 var watching_crop = null
+var watching_soil = null
 
 
 func on_crop_died(index: Vector2):
@@ -69,10 +69,16 @@ func remove_crop(_crop):
 func watch():
 	if watching_crop:
 		watching_crop.remove_watcher()
+
+	if watching_soil:
+		watching_soil.remove_watcher()
+	
 	var crop = get_crop_at_mouse_pos()
 	if crop:
 		watching_crop = crop
-		crop.set_watcher(world.get_watcher())
+		crop.set_watcher(world.get_watcher(), world.get_watcher().containers.CROP)
+		watching_soil = get_soil_substract(crop.index)
+		watching_soil.set_watcher(world.get_watcher(), world.get_watcher().containers.FIELD)
 
 func add_disease():
 	var crop = get_crop_at_mouse_pos()

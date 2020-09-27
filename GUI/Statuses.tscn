@@ -1,15 +1,41 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=3 format=2]
 
 [ext_resource path="res://GUI/Statuses.gd" type="Script" id=1]
+[ext_resource path="res://interface/label_bg.png" type="Texture" id=2]
 
 [node name="Statuses" type="MarginContainer"]
-anchor_right = 1.0
-anchor_bottom = 1.0
+margin_left = 10.0
+margin_top = 10.0
+margin_right = 100.0
+margin_bottom = 50.0
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
-[node name="Items" type="VBoxContainer" parent="."]
-margin_right = 900.0
-margin_bottom = 768.0
+[node name="TextureRect" type="TextureRect" parent="."]
+margin_right = 90.0
+margin_bottom = 40.0
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 1
+
+[node name="watchers" type="HBoxContainer" parent="."]
+margin_left = 20.0
+margin_top = 20.0
+margin_right = 90.0
+margin_bottom = 40.0
+
+[node name="CropItems" type="VBoxContainer" parent="watchers"]
+margin_bottom = 20.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="FieldItems" type="VBoxContainer" parent="watchers"]
+margin_left = 4.0
+margin_right = 4.0
+margin_bottom = 20.0
+__meta__ = {
+"_edit_use_anchors_": false
+}

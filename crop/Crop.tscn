@@ -36,7 +36,15 @@ extents = Vector2( 8, 8 )
 [node name="Crop" type="Area2D"]
 script = ExtResource( 2 )
 needs = {
-"Na": 30
+"K": 3,
+"Na": 2
+}
+absorption_flow = 10
+stages_cycles = {
+0: 20,
+1: 50,
+2: 10,
+3: 40
 }
 
 [node name="Sprite" type="AnimatedSprite" parent="."]

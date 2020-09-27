@@ -21,6 +21,8 @@ export var min_leaf_rate_to_grow_sprouts = 70
 #
 export var water_per_energy = 0.02
 export var max_sun_energy_conversion = 1000
+var total_energy_produced = 0
+var total_energy_used = 0
 
 ####################################################################
 # Productity
@@ -39,18 +41,19 @@ var total_sprouts = 0
 ####################################################################
 # Health control
 #
-export var damage_amortization = 0.8
+export var damage_amortization = 0.5
 var is_dead = false
 
 #################################################################################
 # Status Watcher
 var status_watcher = null
+var watcher_container = null
 
 onready var field = get_parent().get_parent()
 
 enum stages { INITIAL, DEVELOPMNENT, FLOWERY, PRODUCTION, LAST }
 export var stages_cycles = {
-	stages.INITIAL: 100, stages.DEVELOPMNENT: 50, stages.FLOWERY: 10, stages.PRODUCTION: 40
+	stages.INITIAL: 30, stages.DEVELOPMNENT: 50, stages.FLOWERY: 10, stages.PRODUCTION: 40
 }
 export var current_stage = stages.INITIAL setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
@@ -70,9 +73,6 @@ export var current_yield_limit = 100
 #################################################################################
 # Lifecycle and Node control
 
-# func _ready():
-# 	print_debug("new Node at " + str(index))
-
 
 func cycle():
 	# current_cycle += 1
@@ -82,7 +82,14 @@ func cycle():
 	_grow()
 	_update_yield()
 
-	_update_watcher_statuses()
+	stage_maturity += 1
+	if stage_maturity >= stages_cycles[current_stage]:
+		stage_maturity = 0
+		current_stage += 1
+	if current_stage == stages.LAST:
+		current_stage = stages.DEVELOPMNENT
+
+	_update_dynamic_statuses()
 
 	if self.health < 1:
 		_die()
@@ -131,8 +138,14 @@ func get_minerals():
 # Energy
 func _convert_energy(required):
 	#TODO: consume any nutrients?
-	var acquired = _convert_water_to_energy(required)
-	acquired = _convert_sun_to_energy(acquired)
+	var acquired = _convert_sun_to_energy(required)
+	total_energy_produced += acquired
+	acquired = _convert_water_to_energy(acquired)
+	total_energy_used += acquired
+	
+	notify("total_energy_produced", total_energy_produced)
+	notify("total_energy_used", total_energy_used)
+
 	return acquired
 
 
@@ -182,8 +195,10 @@ func _absorve_minerals_from_soil():
 # Health
 func _update_health():
 	var damage = _get_damage_by_lacking_minerals()
+	notify("last damage by lacking mineral", damage)
 	_damage_health(damage)
 	damage = _get_damage_by_rejected_minerals()
+	notify("last damage by rejected mineral", damage)
 	_damage_health(damage)
 	_recover()
 
@@ -259,23 +274,7 @@ func _grow():
 		stages.PRODUCTION:
 			_produce()
 
-	stage_maturity += 1
-	if stage_maturity >= stages_cycles[current_stage]:
-		stage_maturity = 0
-		current_stage += 1
-	if current_stage == stages.LAST:
-		current_stage = stages.DEVELOPMNENT
-
 	# notify("stage", stages.keys()[current_stage])
-
-
-func _update_watcher_statuses():
-	if status_watcher:
-		notify("index", self.index)
-		notify("stage", current_stage)
-		notify("stage_maturity", self.stage_maturity)
-		notify("leafs", self.leaf_rate)
-		notify("sprouts", self.sprouts)
 
 
 func _develop_initial():
@@ -376,15 +375,45 @@ func _update_yield_limit():
 # Status Watcher
 
 
-func set_watcher(watcher):
+func set_watcher(watcher, container):
 	self.status_watcher = watcher
-	_update_watcher_statuses()
+	self.watcher_container = container
+	_update_static_statuses()
+	_update_dynamic_statuses()
+
+
+func _update_static_statuses():
+	notify("type", "crop")
+	notify("index", self.index)
+	notify("needs", needs)
+	notify("tolerates", tolerates)
+
+
+func _update_dynamic_statuses():
+	if status_watcher:
+		notify("-------------------------------", "")
+		notify("minerals", get_minerals())
+		notify("health", health)
+		notify("stage", stages.keys()[current_stage])
+		notify("stage_maturity", stage_maturity)
+		notify("leafs", leaf_rate)
+		notify("-------------------------------", "")
+		notify("sprouts", sprouts)
+		notify("total_fruits", total_fruits)
+		notify("mature_fruits", mature_fruits)
+		notify("green_fruits", green_fruits)
+		notify("rot_fruits", rot_fruits)
+		notify("avg_fruit_size", avg_fruit_size)
+		notify("avg_fruit_quality", avg_fruit_quality)
+		notify("total_sprouts", total_sprouts)
+		notify("-------------------------------", "")
 
 
 func remove_watcher():
 	self.status_watcher = null
+	self.watcher_container = null
 
 
 func notify(key: String, value):
 	if status_watcher:
-		status_watcher.set_item(key, str(value))
+		status_watcher.set_item(key, value, watcher_container)

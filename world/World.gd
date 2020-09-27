@@ -1,7 +1,7 @@
 extends Node2D
 
 onready var _weather = $Weather
-onready var _statuses = $Statuses
+onready var _statuses = $HUD/Statuses
 
 func get_temperature():
 	return _weather.temperature

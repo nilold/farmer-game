@@ -3,8 +3,8 @@
 [ext_resource path="res://GUI/StatusItem.gd" type="Script" id=1]
 
 [node name="Item" type="HBoxContainer"]
-margin_right = 900.0
-margin_bottom = 14.0
+margin_left = 10.0
+margin_top = 5.0
 script = ExtResource( 1 )
 __meta__ = {
 "_edit_use_anchors_": false
