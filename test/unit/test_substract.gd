@@ -21,6 +21,11 @@ func after_all():
 	pass
 
 
+func test_add_mineral():
+	substract.minerals = {}
+	substract.add_mineral("K", 10)
+	assert_eq(substract.minerals["K"], 10)
+
 func test_minerals_consumption():
 	substract.minerals = {"K": 10}
 

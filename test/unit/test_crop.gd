@@ -14,7 +14,7 @@ func before_all():
 
 
 func before_each():
-	field = partial_double(Field).instance()
+	field = autofree(partial_double(Field).instance())
 	crop = autofree(partial_double(Crop).instance())
 	crop.substract = autofree(Substract.new())
 	stub(crop, 'get_minerals').to_return({})
@@ -72,7 +72,7 @@ func test_crop_dies_if_no_minerals():
 
 func test_crop_dies_if_too_much_reject_minerals():
 	var pos = Vector2(5, 5)
-	var mineral = "Fe"
+	var mineral = "Al"
 	crop.index = pos
 	crop.tolerates = {mineral: 5}
 	stub(crop, '_die').to_do_nothing()
@@ -131,11 +131,11 @@ func test_partial_energy_conversion_with_mid_water_or_sun():
 	energy_converted = crop._convert_energy(100)
 	assert_between(int(energy_converted), 1, 99)
 
+
 func test_partial_energy_conversion_with_few_leafs():
 	stub(crop, '_sun').to_return(1000)
 	stub(crop, '_consume_soil_water').to_return(1000)
 	crop.leaf_rate = crop.leaf_rate_setpoint / 2
-	crop.sun_strenght_per_energy = 10
 	var energy_converted = crop._convert_energy(100)
 
 	assert_between(int(energy_converted), 1, 99)
@@ -145,23 +145,104 @@ func test_partial_energy_conversion_with_few_leafs():
 	energy_converted = crop._convert_energy(100)
 	assert_between(int(energy_converted), 1, 99)
 
+
 #####################################################################################
 # Growth test
 
+
 func test_leafs_wont_grow_without_sun():
-	pass
+	stub(crop, '_sun').to_return(0)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 100)
+	crop.substract.add_water(1000) # TODO: this might break when add water excess harm
+	crop.leaf_rate = 1
+	crop.leaf_rate_setpoint = 100
+	crop.cycle()
+
+	assert_eq(int(crop.leaf_rate), 1)
+
 
 func test_leafs_wont_grow_without_water():
-	pass
+	stub(crop, '_sun').to_return(1000)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 100)
+	crop.substract.add_water(0)
+	crop.leaf_rate = 1
+	crop.leaf_rate_setpoint = 100
+	crop.cycle()
+
+	assert_eq(int(crop.leaf_rate), 1)
+
 
 func test_leafs_wont_grow_without_nutrients():
-	pass
+	stub(crop, '_sun').to_return(1000)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 0)
+	crop.substract.add_water(1000) # TODO: this might break when add water excess harm
+	crop.leaf_rate = 1
+	crop.leaf_rate_setpoint = 100
+	crop.cycle()
+
+	assert_eq(int(crop.leaf_rate), 1)
+
 
 func test_leafs_wont_grow_if_in_setpoint():
-	pass
+	stub(crop, '_sun').to_return(1000)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 100)
+	crop.substract.add_water(1000) # TODO: this might break when add water excess harm
+	crop.leaf_rate = 50
+	crop.leaf_rate_setpoint = 50
+	crop.cycle()
+
+	assert_eq(int(crop.leaf_rate), 50)
+
 
 func test_leafs_grow_with_good_conditions():
-	pass
+	stub(crop, '_sun').to_return(1000)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 100)
+	crop.leaf_rate = 5
+	crop.leaf_rate_setpoint = 100
+
+	crop.cycle()
+
+	assert_gt(crop.leaf_rate, 5.0)
+
 
 func test_leafs_grow_faster_when_less_leafs():
-	pass
+	stub(crop, '_sun').to_return(1000)
+	var mineral = "Na"
+	crop.needs = {mineral: 10}
+	crop.substract.add_mineral(mineral, 100)
+	crop.substract.add_water(1000) # TODO: this might break when add water excess harm
+	crop.leaf_rate = 10
+	crop.leaf_rate_setpoint = 100
+
+	crop.cycle()
+	var growth_1 = crop.leaf_rate - 10.0
+	
+	crop.leaf_rate = 80
+	crop.cycle()
+	var growth_2 = crop.leaf_rate - 80
+
+	assert_gt(growth_1, growth_2)
+
+
+# func test_growth_curve():
+# 	stub(crop, '_sun').to_return(1000)
+# 	var mineral = "Na"
+# 	crop.needs = {mineral: 10}
+# 	crop.substract.add_mineral(mineral, 1000)
+# 	crop.substract.add_water(10000000000)
+# 	crop.leaf_rate = 1
+# 	crop.leaf_rate_setpoint = 100
+
+# 	for _i in range(100):
+# 		print(crop.leaf_rate)
+# 		crop.cycle()

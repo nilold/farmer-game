@@ -19,8 +19,8 @@ export var min_leaf_rate_to_grow_sprouts = 70
 ####################################################################
 # Energy
 #
-export var water_per_energy = 0.1
-export var sun_strenght_per_energy = 10
+export var water_per_energy = 0.02
+export var max_sun_energy_conversion = 1000
 
 ####################################################################
 # Productity
@@ -55,7 +55,7 @@ var stage_maturity = 0
 export var MINERAL_CONSUMPTION_PER_GROWING_CYCLE = 5
 
 export var MAX_YIELD = 100
-var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.PRODUCTIVE]
+var YIELD_PER_CYCLE = MAX_YIELD / stages_cycles[stages.PRODUCTION]
 export var MINIMUN_HEALTH_TO_MAX_YIELD = 70
 export var current_yield = 0
 export var current_yield_limit = 100
@@ -136,8 +136,9 @@ func _convert_water_to_energy(required):
 
 
 func _convert_sun_to_energy(required):
-	var available_sun = _sun() * leaf_rate / leaf_rate_setpoint
-	return clamp(required, 0, available_sun / sun_strenght_per_energy)
+	var sun_energy = _sun() * float(leaf_rate) / leaf_rate_setpoint
+	var available_sun = clamp(sun_energy, 0, max_sun_energy_conversion)
+	return required * (available_sun / max_sun_energy_conversion)
 
 
 func _set_current_stage(new_stage):
@@ -153,7 +154,7 @@ func _get_soil_substract():
 	return field.get_soil_substract(self.index)
 
 
-func _consume_soil_water(quantity: int) -> int:
+func _consume_soil_water(quantity: float) -> float:
 	return _get_soil_substract().consume_water(quantity)
 
 
@@ -219,7 +220,7 @@ func _recover():
 	pass
 
 
-func _get_present_amount(mineral) -> int:
+func _get_present_amount(mineral) -> float:
 	var minerals = get_minerals()
 	if not mineral in minerals:
 		minerals[mineral] = 0
@@ -279,35 +280,45 @@ func _produce():
 
 
 func _grow_leafs():
-	var growth_pressure = ((leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint) * 0.5  # 0 to 0.5 (it seemed to fast for me)
-	var required_energy = growth_pressure * leaf_growth_energy_consumption  # 0 to leaf_growth_energy_consumption
-	var required_mineral = growth_pressure * leaf_growth_mineral_consumption  # 0 to leaf_growth_mineral_consumption
+	if leaf_rate < 1:
+		leaf_rate = 1
+
+	var growth_pressure = float(leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint
+	if growth_pressure == 0:
+		return
+
+	var growth_force = _grow_by_energy_and_mineral(
+		growth_pressure, leaf_growth_energy_consumption, leaf_growth_mineral_consumption
+	)
+
+	var growth = growth_force * (leaf_rate_setpoint - leaf_rate)
+	leaf_rate = clamp(leaf_rate + growth, leaf_rate, leaf_rate_setpoint)
+
+
+func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumption):
+	var required_energy = pressure * energy_consumption  # 0 to leaf_growth_energy_consumption
+	var required_mineral = pressure * mineral_consumption  # 0 to leaf_growth_mineral_consumption
 	var acquired_energy = _convert_energy(required_energy)  # 0 to leaf_growth_energy_consumption
 	var consumed_minerals = _consume_self_minerals(required_mineral)
 
-	var growth_force = (
-		growth_pressure
+	return (
+		pressure
+		* pressure
 		* (acquired_energy / required_energy)
 		* (consumed_minerals / required_mineral)
 	)  # 0 to 1  # 0 to 1 sqrd
 
-	leaf_rate = clamp(leaf_rate * (1 + growth_force), leaf_rate, leaf_rate_setpoint)
 
+func _grow_sprouts(): # TODO: add tests
+	var growth_pressure = float(fruits_setpoint - sprouts) / fruits_setpoint
+	if growth_pressure == 0:
+		return
 
-func _grow_sprouts():
-	var growth_pressure = ((fruits_setpoint - sprouts) / fruits_setpoint) * 0.5  # 0 to 0.5 (it seemed to fast for me)
-	var required_energy = growth_pressure * fruits_growth_energy_consumption  # 0 to fruits_growth_energy_consumption
-	var required_mineral = growth_pressure * fruits_growth_mineral_consumption  # 0 to fruits_growth_mineral_consumption
-	var acquired_energy = _convert_energy(required_energy)  # 0 to fruits_growth_energy_consumption
-	var consumed_minerals = _consume_self_minerals(required_mineral)
-
-	var growth_force = (
-		growth_pressure
-		* (acquired_energy / required_energy)
-		* (consumed_minerals / required_mineral)
-	)  # 0 to 1  # 0 to 1 sqrd
-
-	sprouts = clamp(sprouts * (1 + growth_force), sprouts, fruits_setpoint)
+	var growth_force = _grow_by_energy_and_mineral(
+		growth_pressure, fruits_growth_energy_consumption, fruits_growth_mineral_consumption
+	)
+	var growth = growth_force * (fruits_setpoint - sprouts)
+	sprouts = clamp(sprouts + growth, sprouts, fruits_setpoint)
 
 
 func _grow_fruits():
@@ -315,6 +326,9 @@ func _grow_fruits():
 
 
 func _consume_self_minerals(amount = MINERAL_CONSUMPTION_PER_GROWING_CYCLE):
+	if len(needs) == 0:
+		return 0
+
 	var avg_consumed = 0
 	var need_n = 0
 
@@ -331,7 +345,7 @@ func _consume_self_minerals(amount = MINERAL_CONSUMPTION_PER_GROWING_CYCLE):
 func _update_yield():
 	# TODO add tests
 	_update_yield_limit()
-	if current_stage == stages.PRODUCTIVE:
+	if current_stage == stages.PRODUCTION:
 		current_yield += YIELD_PER_CYCLE * health / MAX_HEALTH  #TODO[1]: update health to be a 0 to 1 ratio so this calcuation is performed onyl once per cycle 
 
 

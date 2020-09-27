@@ -11,7 +11,7 @@ var minerals = {}
 # Water
 export var MIN_RANDON_WATER = 50
 export var MAX_RANDOM_WATER = 100
-export var water_saturation = 100  # can be changed with soil inputs
+export var water_saturation = 1000  # can be changed with soil inputs
 export var water = 0
 
 
@@ -24,17 +24,19 @@ func _init(randomize_qnty: bool = false):
 		water = int(rand_range(MIN_RANDON_WATER, MAX_RANDOM_WATER))
 
 
-func add_mineral(mineral: String, quantity: int):
+func add_mineral(mineral: String, quantity: float):
+	if not mineral in minerals:
+		minerals[mineral] = 0
 	minerals[mineral] += quantity
 	minerals[mineral] = clamp(minerals[mineral], 0, MINERAL_SATURATION)
 
 
-func add_water(quantity: int):
+func add_water(quantity: float):
 	water += quantity
 	water = clamp(water, 0, water_saturation)
 
 
-func consume_mineral(mineral: String, quantity: int):
+func consume_mineral(mineral: String, quantity: float):
 	var acquired = 0
 	if has_mineral(mineral):
 		acquired = clamp(quantity, 0, minerals[mineral])
@@ -43,7 +45,7 @@ func consume_mineral(mineral: String, quantity: int):
 	return acquired
 
 
-func consume_water(quantity: int):
+func consume_water(quantity: float):
 	var acquired = clamp(quantity, 0, water)
 	water -= acquired
 	return acquired
