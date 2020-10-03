@@ -132,7 +132,7 @@ func test_partial_energy_conversion_with_mid_water_or_sun():
 	assert_between(int(energy_converted), 1, 99)
 
 
-func test_partial_energy_conversion_with_few_leafs():
+func test_partial_energy_conversion_with_few_leaves():
 	stub(crop, '_sun').to_return(1000)
 	stub(crop, '_consume_soil_water').to_return(1000)
 	crop.leaf_rate = crop.leaf_rate_setpoint / 2
@@ -150,7 +150,7 @@ func test_partial_energy_conversion_with_few_leafs():
 # Growth test
 
 
-func test_leafs_wont_grow_without_sun():
+func test_leaves_wont_grow_without_sun():
 	stub(crop, '_sun').to_return(0)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}
@@ -163,7 +163,7 @@ func test_leafs_wont_grow_without_sun():
 	assert_eq(int(crop.leaf_rate), 1)
 
 
-func test_leafs_wont_grow_without_water():
+func test_leaves_wont_grow_without_water():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}
@@ -176,7 +176,7 @@ func test_leafs_wont_grow_without_water():
 	assert_eq(int(crop.leaf_rate), 1)
 
 
-func test_leafs_wont_grow_without_nutrients():
+func test_leaves_wont_grow_without_nutrients():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}
@@ -189,7 +189,7 @@ func test_leafs_wont_grow_without_nutrients():
 	assert_eq(int(crop.leaf_rate), 1)
 
 
-func test_leafs_wont_grow_if_in_setpoint():
+func test_leaves_wont_grow_if_in_setpoint():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}
@@ -202,7 +202,7 @@ func test_leafs_wont_grow_if_in_setpoint():
 	assert_eq(int(crop.leaf_rate), 50)
 
 
-func test_leafs_grow_with_good_conditions():
+func test_leaves_grow_with_good_conditions():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}
@@ -215,7 +215,7 @@ func test_leafs_grow_with_good_conditions():
 	assert_gt(crop.leaf_rate, 5.0)
 
 
-func test_leafs_grow_faster_when_less_leafs():
+func test_leaves_grow_faster_when_less_leaves():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
 	crop.needs = {mineral: 10}

@@ -10,8 +10,8 @@ F-C: Flowery Cycles = 10
 P-C: Production Cycles = 40
 
 ### Development Stage
-Will determine de amount of flowers and leafs.
-Flower production has higher priority, but if leaf_rate is to low on the beginning of this stage, the plant will be forced to produce more leafs and less fruits.
+Will determine de amount of flowers and leaves.
+Flower production has higher priority, but if leaf_rate is to low on the beginning of this stage, the plant will be forced to produce more leaves and less fruits.
 
 ### Flowery Stage
 The max number of fruits is already determined on the last stage

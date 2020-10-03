@@ -293,13 +293,13 @@ func _grow():
 
 
 func _develop_initial():
-	_grow_leafs()
+	_grow_leaves()
 
 
 func _develop():
 	if leaf_rate >= min_leaf_rate_to_grow_sprouts:
 		_grow_sprouts()  # higher priority
-	_grow_leafs()
+	_grow_leaves()
 
 
 func _flower():
@@ -310,7 +310,7 @@ func _produce():
 	_grow_fruits()
 
 
-func _grow_leafs():
+func _grow_leaves():
 	if leaf_rate < 1:
 		leaf_rate = 1
 
@@ -414,7 +414,7 @@ func _update_dynamic_statuses():
 		notify("stage", stages.keys()[current_stage])
 		notify("stage_maturity", stage_maturity)
 		notify("------------production------------------", "")
-		notify("leafs", leaf_rate)
+		notify("leaves", leaf_rate)
 		notify("sprouts", sprouts)
 		notify("total_fruits", total_fruits)
 		notify("mature_fruits", mature_fruits)
