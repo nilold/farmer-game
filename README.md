@@ -4,3 +4,5 @@ This game is inspired by Maxis's SimFarm (1993). However, it has the ambition of
 It's the first time I´m using the Godot engine, and it's the first time I´m making a game from scratch at all. So I am pretty sure that it will have a lot of issues in logic and performance at first, which I will try to address while developing the game core.
 
 Godot is a wonderful open-source game engine, written in C++ and in GodotScript, which allows you to create games using a GUI and codes in GodotScript (python-like) or C#. It is also possible to write code in C++ and integrate it with Godot. I don't know how to do it yet, but it is something that I surely will do to solve some performance and code cleanness issues: Instantiating many crops at the same time is currently taking to long; Godot Script has a week OOP structure, and I'm missing Interfaces and Abstract Classes very much, which I believe will be a problem when I try to add other cultivars beside coffee.
+
+[Coffee Crop Model](docs/crop-model-coffe.md) (currently in portuguese).
