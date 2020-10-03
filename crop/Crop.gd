@@ -151,6 +151,11 @@ func get_minerals():
 
 #################################################################################
 # Energy
+
+
+# Convert Energy
+# Use sun and water and maybe some nutrient to convert into usable energy
+# WARNING: all consumables must be also present on the _return_energy_resources function
 func _convert_energy(required):
 	#TODO: consume any nutrients?
 	var acquired = _convert_sun_to_energy(required)
@@ -162,6 +167,11 @@ func _convert_energy(required):
 	notify("total_energy_used", total_energy_used)
 
 	return acquired
+
+
+# Returns everything consumed by the _convert_energy function proportionally to the quantity
+func _return_energy_resources(quantity):
+	_add_water_to_soil(water_per_energy * quantity)
 
 
 func _convert_water_to_energy(required):
@@ -190,6 +200,10 @@ func _get_soil_substract():
 
 func _consume_soil_water(quantity: float) -> float:
 	return _get_soil_substract().consume_water(quantity)
+
+
+func _add_water_to_soil(quantity: float) -> float:
+	return _get_soil_substract().add_water(quantity)
 
 
 func _absorve_minerals_from_soil():
@@ -360,6 +374,11 @@ func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumpti
 	var required_mineral = pressure * mineral_consumption  # 0 to leaf_growth_mineral_consumption
 	var acquired_energy = _convert_energy(required_energy)  # 0 to leaf_growth_energy_consumption
 	var consumed_minerals = _consume_self_minerals(required_mineral)
+
+	# Growth consumption paradox: we have to return unsued energy in the case that consume_minerals dont succeeds
+	var mineral_consumption_ratio = consumed_minerals / required_mineral
+	var energy_to_return = required_energy * (1 - mineral_consumption_ratio)
+	_return_energy_resources(energy_to_return)
 
 	return (
 		pressure
