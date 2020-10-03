@@ -22,6 +22,11 @@ It will determine the amount of health fruits that will mature in the Production
 The number of fruits determined by the end of the Flowery stage will develop.
 This stage will determine fruit quality and avg size (although size is mainly defined by the variety)
 
+# Coffee Growth Tests
+I'm trying to analyze the effects of the environment on the crop growth.
+## Effects fo sun with no hydric stress
+![Coffee Lifescyle](leaf-growth-by-sun-model.png)
+
 
 # Coffee Crop model
 ### TODO: translate
