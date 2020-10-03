@@ -459,7 +459,7 @@ func _update_dynamic_statuses():
 	if status_watcher:
 		notify("-----------development--------------", "")
 		notify("minerals", get_minerals())
-		notify("water", get_minerals())
+		notify("water", get_water())
 		notify("health", health)
 		notify("stage", stages.keys()[current_stage])
 		notify("stage_maturity", stage_maturity)
