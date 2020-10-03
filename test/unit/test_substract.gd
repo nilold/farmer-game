@@ -24,11 +24,20 @@ func after_all():
 func test_add_mineral():
 	substract.minerals = {}
 	substract.add_mineral("K", 10)
-	assert_eq(substract.minerals["K"], 10)
+	assert_eq(substract.minerals["K"], 10.0)
+
 
 func test_minerals_consumption():
 	substract.minerals = {"K": 10}
 
-	assert_eq(substract.consume_mineral("K", 7), 7)
-	assert_eq(substract.consume_mineral("K", 7), 3)
-	assert_eq(substract.consume_mineral("K", 7), 0)
+	assert_eq(substract.consume_mineral("K", 7), 7.0)
+	assert_eq(substract.consume_mineral("K", 7), 3.0)
+	assert_eq(substract.consume_mineral("K", 7), 0.0)
+
+
+func test_water_consumption():
+	substract.water = 10
+
+	assert_eq(substract.consume_water(7), 7.0)
+	assert_eq(substract.consume_water(7), 3.0)
+	assert_eq(substract.consume_water(7), 0.0)

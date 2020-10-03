@@ -7,7 +7,9 @@ var index: Vector2
 #
 export var needs = {}  #setget set_needs
 export var tolerates = {}  # the less, the worse, but 0 = full tolerance
-export var absorption_flow: float = 1.8
+export var mineral_absorption_flow: float = 1.8
+export var water_absorption_flow: float = 0.1
+export var water_saturation = 1
 ####################################################################
 # Development
 #
@@ -81,7 +83,7 @@ export var current_yield_limit = 100
 
 func cycle():
 	# current_cycle += 1
-	_absorve_minerals_from_soil()
+	_absorve_nutrients_from_soil()
 	_activate_diseases()
 	_update_health()
 	_grow()
@@ -148,9 +150,17 @@ func _sun():
 func get_minerals():
 	return self.substract.get_minerals()
 
+func get_water():
+	return self.substract.get_water()
+
 
 #################################################################################
 # Energy
+
+
+# Convert Energy
+# Use sun and water and maybe some nutrient to convert into usable energy
+# WARNING: all consumables must be also present on the _return_energy_resources function
 func _convert_energy(required):
 	#TODO: consume any nutrients?
 	var acquired = _convert_sun_to_energy(required)
@@ -164,8 +174,13 @@ func _convert_energy(required):
 	return acquired
 
 
+# Returns everything consumed by the _convert_energy function proportionally to the quantity
+func _return_energy_resources(quantity):
+	_add_water(water_per_energy * quantity)
+
+
 func _convert_water_to_energy(required):
-	var water = _consume_soil_water(water_per_energy * required)
+	var water = _consume_water(water_per_energy * required)
 	return clamp(required, 0, water / water_per_energy)
 
 
@@ -192,7 +207,19 @@ func _consume_soil_water(quantity: float) -> float:
 	return _get_soil_substract().consume_water(quantity)
 
 
-func _absorve_minerals_from_soil():
+func _add_water_to_soil(quantity: float) -> float:
+	return _get_soil_substract().add_water(quantity)
+
+
+func _consume_water(quantity: float) -> float:
+	return substract.consume_water(quantity)
+
+
+func _add_water(quantity: float) -> float:
+	return substract.add_water(quantity)
+
+
+func _absorve_nutrients_from_soil():
 	if not field:
 		printerr("Crop has no field")
 		field = get_field()
@@ -203,7 +230,10 @@ func _absorve_minerals_from_soil():
 	for m in soil_substract.minerals:
 		if not m in minerals:
 			minerals[m] = 0
-		minerals[m] += soil_substract.consume_mineral(m, absorption_flow)
+		minerals[m] += soil_substract.consume_mineral(m, mineral_absorption_flow)
+
+	if get_water() < water_saturation:
+		_add_water(soil_substract.consume_water(water_absorption_flow))
 
 
 #################################################################################
@@ -359,7 +389,18 @@ func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumpti
 	var required_energy = pressure * energy_consumption  # 0 to leaf_growth_energy_consumption
 	var required_mineral = pressure * mineral_consumption  # 0 to leaf_growth_mineral_consumption
 	var acquired_energy = _convert_energy(required_energy)  # 0 to leaf_growth_energy_consumption
+
+	if acquired_energy == 0:
+		return 0
+
+	var energy_consumption_ratio = acquired_energy / required_energy
+	required_mineral *= energy_consumption_ratio
 	var consumed_minerals = _consume_self_minerals(required_mineral)
+
+	# Growth consumption paradox: we have to return unsued energy in the case that consume_minerals dont succeeds
+	var mineral_consumption_ratio = consumed_minerals / required_mineral
+	var energy_to_return = acquired_energy * (1 - mineral_consumption_ratio)
+	_return_energy_resources(energy_to_return)
 
 	return (
 		pressure
@@ -410,6 +451,7 @@ func _update_dynamic_statuses():
 	if status_watcher:
 		notify("-----------development--------------", "")
 		notify("minerals", get_minerals())
+		notify("water", get_water())
 		notify("health", health)
 		notify("stage", stages.keys()[current_stage])
 		notify("stage_maturity", stage_maturity)
