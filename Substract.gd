@@ -63,12 +63,20 @@ func consume_water(quantity: float):
 	return acquired
 
 
-func has_mineral(mineral: String):
+func has_mineral(mineral: String) -> bool:
 	return mineral in minerals
 
 
 func get_minerals():
 	return self.minerals
+
+
+func has_water() -> bool:
+	return water > 0
+
+
+func get_water() -> float:
+	return water
 
 
 func set_watcher(watcher, container):
@@ -82,9 +90,11 @@ func remove_watcher():
 	self.status_watcher = null
 	self.watcher_container = null
 
+
 func update_watcher():
 	notify("minerals", minerals)
 	notify("water", water)
+
 
 func notify(key: String, value):
 	if status_watcher:
