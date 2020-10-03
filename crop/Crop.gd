@@ -7,15 +7,16 @@ var index: Vector2
 #
 export var needs = {}  #setget set_needs
 export var tolerates = {}  # the less, the worse, but 0 = full tolerance
-export var absorption_flow: float = 5
+export var absorption_flow: float = 1.8
 ####################################################################
 # Development
 #
 var leaf_rate = 0
 export var leaf_rate_setpoint = 100  # Value in which happens 100% of sun energy conversion
 export var leaf_growth_energy_consumption: float = 30
-export var leaf_growth_mineral_consumption: float = 0.8
+export var leaf_growth_mineral_consumption: float = 1.5
 export var min_leaf_rate_to_grow_sprouts: float = 70
+export var leaf_growth_speed: float = 5
 ####################################################################
 # Energy
 #
@@ -28,8 +29,13 @@ var total_energy_used = 0
 # Productity
 #
 export var fruits_setpoint = 100
+export var sprouts_growth_energy_consumption = 70
+export var sprouts_growth_mineral_consumption: float = 1.2
 export var fruits_growth_energy_consumption = 50
-export var fruits_growth_mineral_consumption: float = 1.0
+export var fruits_growth_mineral_consumption: float = 1.5
+export var sprout_growth_speed: float = 5
+export var fruit_growth_speed: float = 5
+
 var sprouts = 0
 var total_fruits = 0
 var mature_fruits = 0
@@ -88,11 +94,11 @@ func cycle():
 		current_stage = stages.DEVELOPMNENT
 		reset_yield()
 
-
 	_update_dynamic_statuses()
 
 	if self.health < 1:
 		_die()
+
 
 func reset_yield():
 	sprouts = 0
@@ -102,6 +108,7 @@ func reset_yield():
 	rot_fruits = 0
 	avg_fruit_size = 0
 	avg_fruit_quality = 0
+
 
 func _update_frame():
 	sprite.frame = current_stage
@@ -150,7 +157,7 @@ func _convert_energy(required):
 	total_energy_produced += acquired
 	acquired = _convert_water_to_energy(acquired)
 	total_energy_used += acquired
-	
+
 	notify("total_energy_produced", total_energy_produced)
 	notify("total_energy_used", total_energy_used)
 
@@ -300,7 +307,7 @@ func _flower():
 
 
 func _produce():
-	pass
+	_grow_fruits()
 
 
 func _grow_leafs():
@@ -315,8 +322,37 @@ func _grow_leafs():
 		growth_pressure, leaf_growth_energy_consumption, leaf_growth_mineral_consumption
 	)
 
-	var growth = growth_force * (leaf_rate_setpoint - leaf_rate)
+	# TODO: this logic is not good
+	# the total energy and mineral consumption should be 
+	# directly proportional to the growth and not inderect like here
+	# I would say it should be linearly proportional
+
+	var growth = growth_force * leaf_growth_speed
 	leaf_rate = clamp(leaf_rate + growth, leaf_rate, leaf_rate_setpoint)
+
+
+func _grow_sprouts():  # TODO: add tests
+	var growth_pressure = float(fruits_setpoint - sprouts) / fruits_setpoint
+	if growth_pressure == 0:
+		return
+
+	var growth_force = _grow_by_energy_and_mineral(
+		growth_pressure, sprouts_growth_energy_consumption, sprouts_growth_mineral_consumption
+	)
+	var growth = growth_force * sprout_growth_speed
+	sprouts = clamp(sprouts + growth, sprouts, fruits_setpoint)
+
+
+func _grow_fruits():
+	var growth_pressure = float(sprouts - total_fruits) / sprouts
+	if growth_pressure == 0:
+		return
+
+	var growth_force = _grow_by_energy_and_mineral(
+		growth_pressure, fruits_growth_energy_consumption, fruits_growth_mineral_consumption
+	)
+	var growth = growth_force * fruit_growth_speed
+	total_fruits = clamp(total_fruits + growth, total_fruits, sprouts)
 
 
 func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumption):
@@ -331,22 +367,6 @@ func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumpti
 		* (acquired_energy / required_energy)
 		* (consumed_minerals / required_mineral)
 	)  # 0 to 1  # 0 to 1 sqrd
-
-
-func _grow_sprouts():  # TODO: add tests
-	var growth_pressure = float(fruits_setpoint - sprouts) / fruits_setpoint
-	if growth_pressure == 0:
-		return
-
-	var growth_force = _grow_by_energy_and_mineral(
-		growth_pressure, fruits_growth_energy_consumption, fruits_growth_mineral_consumption
-	)
-	var growth = growth_force * (fruits_setpoint - sprouts)
-	sprouts = clamp(sprouts + growth, sprouts, fruits_setpoint)
-
-
-func _grow_fruits():
-	pass
 
 
 func _consume_self_minerals(amount):
