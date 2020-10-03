@@ -1,12 +1,12 @@
-
+# Crop Model Diagram
 ![Crop Model Diagram](crop-model-diagram.png)
+
+# Coffee Lifescyle
 ![Coffee Lifescyle](coffee-lifecycle.png)
 
+# Coffee Crop model
 ### TODO: translate
 ### TODO: complete
-
- ## Coffee
- ### Crop model
 - Nutrição
     - Componentes:
         - Água
