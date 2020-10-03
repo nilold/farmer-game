@@ -4,6 +4,25 @@
 # Coffee Lifescyle
 ![Coffee Lifescyle](coffee-lifecycle.png)
 
+ID-C : Initial Development Cycles = 50
+D-C : Development Cycles = 100
+F-C: Flowery Cycles = 10
+P-C: Production Cycles = 40
+
+### Development Stage
+Will determine de amount of flowers and leafs.
+Flower production has higher priority, but if leaf_rate is to low on the beginning of this stage, the plant will be forced to produce more leafs and less fruits.
+
+### Flowery Stage
+The max number of fruits is already determined on the last stage
+In this stage, the flowers will grow and fall.
+It will determine the amount of health fruits that will mature in the Production stage.
+
+### Production Stage
+The number of fruits determined by the end of the Flowery stage will develop.
+This stage will determine fruit quality and avg size (although size is mainly defined by the variety)
+
+
 # Coffee Crop model
 ### TODO: translate
 ### TODO: complete
