@@ -181,7 +181,6 @@ func _return_energy_resources(quantity):
 
 func _convert_water_to_energy(required):
 	var water = _consume_water(water_per_energy * required)
-	print("consumed water", water)
 	return clamp(required, 0, water / water_per_energy)
 
 
@@ -346,7 +345,6 @@ func _grow_leaves():
 		leaf_rate = 1
 
 	var growth_pressure = float(leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint
-	print("growth pressure", growth_pressure)
 	if growth_pressure == 0:
 		return
 
@@ -388,12 +386,9 @@ func _grow_fruits():
 
 
 func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumption):
-	print("energy mineral")
 	var required_energy = pressure * energy_consumption  # 0 to leaf_growth_energy_consumption
-	print("required_energy ", required_energy)
 	var required_mineral = pressure * mineral_consumption  # 0 to leaf_growth_mineral_consumption
 	var acquired_energy = _convert_energy(required_energy)  # 0 to leaf_growth_energy_consumption
-	print("acquired_energy ", acquired_energy)
 
 	if acquired_energy == 0:
 		return 0
@@ -401,13 +396,10 @@ func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumpti
 	var energy_consumption_ratio = acquired_energy / required_energy
 	required_mineral *= energy_consumption_ratio
 	var consumed_minerals = _consume_self_minerals(required_mineral)
-	print("consumed_minerals ", consumed_minerals)
 
 	# Growth consumption paradox: we have to return unsued energy in the case that consume_minerals dont succeeds
 	var mineral_consumption_ratio = consumed_minerals / required_mineral
-	print("mineral_consumption_ratio ", mineral_consumption_ratio )
 	var energy_to_return = acquired_energy * (1 - mineral_consumption_ratio)
-	print("energy_to_return ", energy_to_return)
 	_return_energy_resources(energy_to_return)
 
 	return (
