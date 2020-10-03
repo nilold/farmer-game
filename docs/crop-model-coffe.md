@@ -1,6 +1,6 @@
 
-![Crop Model Diagram](docs/crop-model-diagram.png)
-![Coffee Lifescyle](docs/coffee-lifecycle.png)
+[Crop Model Diagram](docs/crop-model-diagram.png)
+[Coffee Lifescyle](docs/coffee-lifecycle.png)
 
 ### TODO: translate
 ### TODO: complete
