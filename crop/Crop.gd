@@ -10,6 +10,7 @@ export var tolerates = {}  # the less, the worse, but 0 = full tolerance
 export var mineral_absorption_flow: float = 1.8
 export var water_absorption_flow: float = 0.1
 export var water_saturation = 1
+var root_health = 1.0
 ####################################################################
 # Development
 #
@@ -150,6 +151,7 @@ func _sun():
 func get_minerals():
 	return self.substract.get_minerals()
 
+
 func get_water():
 	return self.substract.get_water()
 
@@ -207,16 +209,16 @@ func _consume_soil_water(quantity: float) -> float:
 	return _get_soil_substract().consume_water(quantity)
 
 
-func _add_water_to_soil(quantity: float) -> float:
-	return _get_soil_substract().add_water(quantity)
+func _add_water_to_soil(quantity: float) -> void:
+	_get_soil_substract().add_water(quantity)
 
 
 func _consume_water(quantity: float) -> float:
 	return substract.consume_water(quantity)
 
 
-func _add_water(quantity: float) -> float:
-	return substract.add_water(quantity)
+func _add_water(quantity: float) -> void:
+	substract.add_water(quantity)
 
 
 func _absorve_nutrients_from_soil():
@@ -230,10 +232,10 @@ func _absorve_nutrients_from_soil():
 	for m in soil_substract.minerals:
 		if not m in minerals:
 			minerals[m] = 0
-		minerals[m] += soil_substract.consume_mineral(m, mineral_absorption_flow)
+		minerals[m] += soil_substract.consume_mineral(m, mineral_absorption_flow * root_health)
 
 	if get_water() < water_saturation:
-		_add_water(soil_substract.consume_water(water_absorption_flow))
+		_add_water(soil_substract.consume_water(water_absorption_flow * root_health))
 
 
 #################################################################################

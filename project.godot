@@ -8,9 +8,14 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Node2D",
+"class": "Inffectable",
+"language": "GDScript",
+"path": "res://crop/Inffectable.gd"
+} ]
 _global_script_class_icons={
-
+"Inffectable": ""
 }
 
 [application]
