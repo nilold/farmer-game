@@ -1,7 +1,5 @@
 extends Node2D
 
-class_name Inffectable
-
 onready var substract = $Substract
 onready var sprite = $Sprite
 

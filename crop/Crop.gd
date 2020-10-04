@@ -91,7 +91,6 @@ export var current_yield_limit = 100
 
 
 func cycle():
-	# current_cycle += 1
 	_absorve_nutrients_from_soil()
 	_activate_diseases()
 	_update_health()
@@ -231,11 +230,11 @@ func _add_water_to_soil(quantity: float) -> void:
 
 
 func _consume_water(quantity: float) -> float:
-	return substract.consume_water(quantity)
+	return self.substract.consume_water(quantity)
 
 
 func _add_water(quantity: float) -> void:
-	substract.add_water(quantity)
+	self.substract.add_water(quantity)
 
 
 func _absorve_nutrients_from_soil():
@@ -306,7 +305,7 @@ func _recover():
 
 
 func _get_present_amount(mineral) -> float:
-	var minerals = get_minerals()
+	var minerals = self.get_minerals()
 	if not mineral in minerals:
 		minerals[mineral] = 0
 	return minerals[mineral]
@@ -396,7 +395,7 @@ func _grow_flowers() -> float:  # TODO: add tests
 	var growth_force = _grow_by_energy_and_mineral(
 		growth_pressure, flowers_growth_energy_consumption, flowers_growth_mineral_consumption
 	)
-	
+
 	var growth = growth_force * flower_growth_speed
 	flowers += growth
 	
@@ -458,10 +457,6 @@ func _consume_self_minerals(amount):
 	avg_consumed /= need_n
 	return avg_consumed
 
-
-#################################################################################
-# Productivity
-# TODO
 
 #################################################################################
 # Status Watcher
