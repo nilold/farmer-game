@@ -16,10 +16,10 @@ var root_health = 1.0
 #
 var leaves = 0
 export var leaves_setpoint = 100  # Value in which happens 100% of sun energy conversion
-export var leaf_growth_energy_consumption: float = 30
-export var leaf_growth_mineral_consumption: float = 1.5
+export var leaf_growth_energy_consumption: float = 70
+export var leaf_growth_mineral_consumption: float = 1.8
 export var min_leaves_to_grow_sprouts: float = 70
-export var leaf_growth_speed: float = 5
+export var leaf_growth_speed: float = 50
 export var natural_leaf_drop_per_cycle: float = 0.002
 ####################################################################
 # Energy
@@ -35,16 +35,16 @@ var total_energy_used = 0
 export var fruits_setpoint = 100
 
 export var sprouts_growth_energy_consumption = 70
-export var sprouts_growth_mineral_consumption: float = 1.2
-export var sprout_growth_speed: float = 2
+export var sprouts_growth_mineral_consumption: float = 2.0
+export var sprout_growth_speed: float = 50
 
 export var flowers_growth_energy_consumption = 70
 export var flowers_growth_mineral_consumption: float = 1.2
 export var flower_growth_speed: float = 20
 
-export var fruits_growth_energy_consumption = 50
-export var fruits_growth_mineral_consumption: float = 1.5
-export var fruit_growth_speed: float = 5
+export var fruits_growth_energy_consumption = 120
+export var fruits_growth_mineral_consumption: float = 4.0
+export var fruit_growth_speed: float = 50
 
 var flowers = 0
 var sprouts = 0
@@ -234,7 +234,7 @@ func _consume_water(quantity: float) -> float:
 
 
 func _add_water(quantity: float) -> void:
-	self.substract.add_water(quantity)
+	substract.add_water(quantity)
 
 
 func _absorve_nutrients_from_soil():
@@ -398,7 +398,7 @@ func _grow_flowers() -> float:  # TODO: add tests
 
 	var growth = growth_force * flower_growth_speed
 	flowers += growth
-	
+
 	return growth
 
 

@@ -40,15 +40,6 @@ needs = {
 "N": 1.0,
 "P": 1.0
 }
-absorption_flow = 1.5
-leaf_growth_energy_consumption = 70.0
-leaf_growth_mineral_consumption = 1.8
-leaf_growth_speed = 50.0
-sprouts_growth_mineral_consumption = 2.0
-fruits_growth_energy_consumption = 120
-fruits_growth_mineral_consumption = 4.0
-sprout_growth_speed = 50.0
-fruit_growth_speed = 50.0
 
 [node name="Sprite" type="AnimatedSprite" parent="."]
 material = SubResource( 1 )
