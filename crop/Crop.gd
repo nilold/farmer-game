@@ -14,12 +14,13 @@ var root_health = 1.0
 ####################################################################
 # Development
 #
-var leaf_rate = 0
-export var leaf_rate_setpoint = 100  # Value in which happens 100% of sun energy conversion
-export var leaf_growth_energy_consumption: float = 30
-export var leaf_growth_mineral_consumption: float = 1.5
-export var min_leaf_rate_to_grow_sprouts: float = 70
-export var leaf_growth_speed: float = 5
+var leaves = 0
+export var leaves_setpoint = 100  # Value in which happens 100% of sun energy conversion
+export var leaf_growth_energy_consumption: float = 70
+export var leaf_growth_mineral_consumption: float = 1.8
+export var min_leaves_to_grow_sprouts: float = 70
+export var leaf_growth_speed: float = 50
+export var natural_leaf_drop_per_cycle: float = 0.002
 ####################################################################
 # Energy
 #
@@ -32,13 +33,20 @@ var total_energy_used = 0
 # Productity
 #
 export var fruits_setpoint = 100
-export var sprouts_growth_energy_consumption = 70
-export var sprouts_growth_mineral_consumption: float = 1.2
-export var fruits_growth_energy_consumption = 50
-export var fruits_growth_mineral_consumption: float = 1.5
-export var sprout_growth_speed: float = 5
-export var fruit_growth_speed: float = 5
 
+export var sprouts_growth_energy_consumption = 70
+export var sprouts_growth_mineral_consumption: float = 2.0
+export var sprout_growth_speed: float = 50
+
+export var flowers_growth_energy_consumption = 70
+export var flowers_growth_mineral_consumption: float = 1.2
+export var flower_growth_speed: float = 20
+
+export var fruits_growth_energy_consumption = 120
+export var fruits_growth_mineral_consumption: float = 4.0
+export var fruit_growth_speed: float = 50
+
+var flowers = 0
 var sprouts = 0
 var total_fruits = 0
 var mature_fruits = 0
@@ -83,32 +91,40 @@ export var current_yield_limit = 100
 
 
 func cycle():
-	# current_cycle += 1
 	_absorve_nutrients_from_soil()
 	_activate_diseases()
 	_update_health()
 	_grow()
+	_mature()
 
+	_update_dynamic_statuses()
+
+	if self.health < 0.01:
+		_die()
+
+
+func _mature():
 	stage_maturity += 1
 	if stage_maturity >= stages_cycles[current_stage]:
 		stage_maturity = 0
 		current_stage += 1
 	if current_stage == stages.LAST:
 		current_stage = stages.DEVELOPMNENT
-		reset_yield()
+		reset_yield()  # TODO: review this
 
-	_update_dynamic_statuses()
+	_lose_leaves()
 
-	if self.health < 1:
-		_die()
+
+func _lose_leaves():
+	self.leaves *= self.health * (1 - natural_leaf_drop_per_cycle)
 
 
 func reset_yield():
 	sprouts = 0
 	total_fruits = 0
+	rot_fruits = mature_fruits
 	mature_fruits = 0
 	green_fruits = 0
-	rot_fruits = 0
 	avg_fruit_size = 0
 	avg_fruit_quality = 0
 
@@ -187,7 +203,7 @@ func _convert_water_to_energy(required):
 
 
 func _convert_sun_to_energy(required):
-	var sun_energy = _sun() * float(leaf_rate) / leaf_rate_setpoint
+	var sun_energy = _sun() * float(leaves) / leaves_setpoint
 	var available_sun = clamp(sun_energy, 0, max_sun_energy_conversion)
 	return required * (available_sun / max_sun_energy_conversion)
 
@@ -214,7 +230,7 @@ func _add_water_to_soil(quantity: float) -> void:
 
 
 func _consume_water(quantity: float) -> float:
-	return substract.consume_water(quantity)
+	return self.substract.consume_water(quantity)
 
 
 func _add_water(quantity: float) -> void:
@@ -279,8 +295,8 @@ func _get_damage_by_rejected_minerals():
 
 
 func _damage_health(damage):
-	self.health -= damage * self.health * damage_amortization
-	self.health = int(clamp(self.health, 0, MAX_HEALTH))
+	self.health *= (1 - damage * damage_amortization)
+	self.health = clamp(self.health, 0, 1)
 
 
 func _recover():
@@ -289,7 +305,7 @@ func _recover():
 
 
 func _get_present_amount(mineral) -> float:
-	var minerals = get_minerals()
+	var minerals = self.get_minerals()
 	if not mineral in minerals:
 		minerals[mineral] = 0
 	return minerals[mineral]
@@ -329,24 +345,24 @@ func _develop_initial():
 
 
 func _develop():
-	if leaf_rate >= min_leaf_rate_to_grow_sprouts:
+	if leaves >= min_leaves_to_grow_sprouts:
 		_grow_sprouts()  # higher priority
 	_grow_leaves()
 
 
 func _flower():
-	pass
+	sprouts -= _grow_flowers()
 
 
 func _produce():
-	_grow_fruits()
+	flowers -= _grow_fruits()
 
 
 func _grow_leaves():
-	if leaf_rate < 1:
-		leaf_rate = 1
+	if leaves < 1:
+		leaves = 1
 
-	var growth_pressure = float(leaf_rate_setpoint - leaf_rate) / leaf_rate_setpoint
+	var growth_pressure = float(leaves_setpoint - leaves) / leaves_setpoint
 	if growth_pressure == 0:
 		return
 
@@ -354,13 +370,8 @@ func _grow_leaves():
 		growth_pressure, leaf_growth_energy_consumption, leaf_growth_mineral_consumption
 	)
 
-	# TODO: this logic is not good
-	# the total energy and mineral consumption should be 
-	# directly proportional to the growth and not inderect like here
-	# I would say it should be linearly proportional
-
 	var growth = growth_force * leaf_growth_speed
-	leaf_rate = clamp(leaf_rate + growth, leaf_rate, leaf_rate_setpoint)
+	leaves = clamp(leaves + growth, leaves, leaves_setpoint)
 
 
 func _grow_sprouts():  # TODO: add tests
@@ -375,16 +386,36 @@ func _grow_sprouts():  # TODO: add tests
 	sprouts = clamp(sprouts + growth, sprouts, fruits_setpoint)
 
 
-func _grow_fruits():
-	var growth_pressure = float(sprouts - total_fruits) / sprouts
-	if growth_pressure == 0:
-		return
+func _grow_flowers() -> float:  # TODO: add tests
+	if sprouts == 0:
+		return 0.0
+
+	var growth_pressure = float(sprouts) / (sprouts + flowers)
+
+	var growth_force = _grow_by_energy_and_mineral(
+		growth_pressure, flowers_growth_energy_consumption, flowers_growth_mineral_consumption
+	)
+
+	var growth = growth_force * flower_growth_speed
+	flowers += growth
+
+	return growth
+
+
+func _grow_fruits() -> float:
+	if flowers == 0:
+		return 0.0
+
+	var growth_pressure = float(flowers) / (flowers + total_fruits)
 
 	var growth_force = _grow_by_energy_and_mineral(
 		growth_pressure, fruits_growth_energy_consumption, fruits_growth_mineral_consumption
 	)
+
 	var growth = growth_force * fruit_growth_speed
-	total_fruits = clamp(total_fruits + growth, total_fruits, sprouts)
+	total_fruits += growth
+
+	return growth
 
 
 func _grow_by_energy_and_mineral(pressure, energy_consumption, mineral_consumption):
@@ -428,10 +459,6 @@ func _consume_self_minerals(amount):
 
 
 #################################################################################
-# Productivity
-# TODO
-
-#################################################################################
 # Status Watcher
 
 
@@ -458,8 +485,9 @@ func _update_dynamic_statuses():
 		notify("stage", stages.keys()[current_stage])
 		notify("stage_maturity", stage_maturity)
 		notify("------------production------------------", "")
-		notify("leaves", leaf_rate)
+		notify("leaves", leaves)
 		notify("sprouts", sprouts)
+		notify("flowers", flowers)
 		notify("total_fruits", total_fruits)
 		notify("mature_fruits", mature_fruits)
 		notify("green_fruits", green_fruits)
