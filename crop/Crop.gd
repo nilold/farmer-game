@@ -7,7 +7,7 @@ var index: Vector2
 #
 export var needs = {}  #setget set_needs
 export var tolerates = {}  # the less, the worse, but 0 = full tolerance
-export var mineral_absorption_flow: float = 1.8
+export var mineral_absorption_flow: float = 0.4
 export var water_absorption_flow: float = 0.1
 export var water_saturation = 1
 var root_health = 1.0
@@ -17,9 +17,9 @@ var root_health = 1.0
 var leaves = 0
 export var leaves_setpoint = 100  # Value in which happens 100% of sun energy conversion
 export var leaf_growth_energy_consumption: float = 70
-export var leaf_growth_mineral_consumption: float = 1.8
-export var min_leaves_to_grow_sprouts: float = 70
-export var leaf_growth_speed: float = 50
+export var leaf_growth_mineral_consumption: float = 4.0
+export var min_leaves_to_grow_sprouts: float = 88
+export var leaf_growth_speed: float = 40
 export var natural_leaf_drop_per_cycle: float = 0.002
 ####################################################################
 # Energy
@@ -35,16 +35,16 @@ var total_energy_used = 0
 export var fruits_setpoint = 100
 
 export var sprouts_growth_energy_consumption = 70
-export var sprouts_growth_mineral_consumption: float = 2.0
-export var sprout_growth_speed: float = 50
+export var sprouts_growth_mineral_consumption: float = 6.0
+export var sprout_growth_speed: float = 40
 
 export var flowers_growth_energy_consumption = 70
-export var flowers_growth_mineral_consumption: float = 1.2
-export var flower_growth_speed: float = 20
+export var flowers_growth_mineral_consumption: float = 4.2
+export var flower_growth_speed: float = 70
 
 export var fruits_growth_energy_consumption = 120
-export var fruits_growth_mineral_consumption: float = 4.0
-export var fruit_growth_speed: float = 50
+export var fruits_growth_mineral_consumption: float = 60.0
+export var fruit_growth_speed: float = 20
 
 var flowers = 0
 var sprouts = 0
@@ -69,7 +69,7 @@ onready var field = get_parent().get_parent()
 
 enum stages { INITIAL, DEVELOPMNENT, FLOWERY, PRODUCTION, LAST }
 export var stages_cycles = {
-	stages.INITIAL: 30, stages.DEVELOPMNENT: 50, stages.FLOWERY: 10, stages.PRODUCTION: 40
+	stages.INITIAL: 100, stages.DEVELOPMNENT: 50, stages.FLOWERY: 20, stages.PRODUCTION: 40
 }
 export var current_stage = stages.INITIAL setget _set_current_stage
 export var MINIMUM_HEALTH_TO_GROW = 20
@@ -91,6 +91,8 @@ export var current_yield_limit = 100
 
 
 func cycle():
+	if is_dead:
+		return # needed for tests
 	_absorve_nutrients_from_soil()
 	_activate_diseases()
 	_update_health()
@@ -116,11 +118,13 @@ func _mature():
 
 
 func _lose_leaves():
-	self.leaves *= self.health * (1 - natural_leaf_drop_per_cycle)
+	# self.leaves *= self.health * (1 - natural_leaf_drop_per_cycle)
+	self.leaves *= (1 - natural_leaf_drop_per_cycle)
 
 
 func reset_yield():
 	sprouts = 0
+	flowers = 0
 	total_fruits = 0
 	rot_fruits = mature_fruits
 	mature_fruits = 0
@@ -301,7 +305,7 @@ func _damage_health(damage):
 
 func _recover():
 	#TODO
-	pass
+	self.health = clamp(self.health + 0.01, 0, MAX_HEALTH)
 
 
 func _get_present_amount(mineral) -> float:
@@ -351,11 +355,11 @@ func _develop():
 
 
 func _flower():
-	sprouts -= _grow_flowers()
+	sprouts = clamp(sprouts - _grow_flowers(), 0, 100)
 
 
 func _produce():
-	flowers -= _grow_fruits()
+	flowers = clamp(flowers - _grow_fruits(), 0, 100)
 
 
 func _grow_leaves():
@@ -411,6 +415,9 @@ func _grow_fruits() -> float:
 	var growth_force = _grow_by_energy_and_mineral(
 		growth_pressure, fruits_growth_energy_consumption, fruits_growth_mineral_consumption
 	)
+
+	# if self.substract.has_mineral("Na") and self.get_minerals()["Na"] < 1:
+	# 	print(growth_force)
 
 	var growth = growth_force * fruit_growth_speed
 	total_fruits += growth

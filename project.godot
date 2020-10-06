@@ -23,6 +23,11 @@ config/icon="res://icon.png"
 
 Stats="*res://Stats.tscn"
 
+[debug]
+
+settings/gdscript/max_call_stack=4096
+settings/visual_script/max_call_stack=4096
+
 [display]
 
 window/size/width=900

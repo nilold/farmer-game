@@ -36,6 +36,7 @@ func test_inffecting():
 	crop.inffect(bacteria)
 	assert_true(crop.has_disease(bacteria.ID))
 
+
 func test_mineral_absorption():
 	var pos = Vector2(5, 5)
 	var mineral = "Na"
@@ -47,7 +48,10 @@ func test_mineral_absorption():
 	var original_amount = substract.minerals[mineral]
 
 	crop.cycle()
-	assert_almost_eq(substract.minerals[mineral], original_amount - crop.mineral_absorption_flow, 0.001)
+	assert_almost_eq(
+		substract.minerals[mineral], original_amount - crop.mineral_absorption_flow, 0.001
+	)
+
 
 func test_crop_dies_if_no_minerals():
 	var pos = Vector2(5, 5)
@@ -64,6 +68,7 @@ func test_crop_dies_if_no_minerals():
 	crop.cycle()
 
 	assert_called(crop, "_die")
+
 
 func test_crop_dies_if_too_much_reject_minerals():
 	var pos = Vector2(5, 5)
@@ -87,8 +92,10 @@ func test_crop_dies_if_too_much_reject_minerals():
 
 	assert_called(crop, "_die")
 
+
 #####################################################################################
 # Energy test
+
 
 func test_convert_no_energy_without_water():
 	stub(crop, '_sun').to_return(10000)
@@ -97,12 +104,14 @@ func test_convert_no_energy_without_water():
 
 	assert_eq(int(energy_converted), 0)
 
+
 func test_convert_no_energy_without_sun():
 	stub(crop, '_sun').to_return(0)
 	stub(crop, '_consume_water').to_return(10)
 	var energy_converted = crop._convert_energy(100)
 
 	assert_eq(int(energy_converted), 0)
+
 
 func test_convert_all_energy_with_plenty_sun_and_water():
 	stub(crop, '_sun').to_return(1000)
@@ -111,6 +120,7 @@ func test_convert_all_energy_with_plenty_sun_and_water():
 	var energy_converted = crop._convert_energy(100)
 
 	assert_eq(int(energy_converted), 100)
+
 
 func test_partial_energy_conversion_with_mid_water_or_sun():
 	stub(crop, '_sun').to_return(50)
@@ -125,6 +135,7 @@ func test_partial_energy_conversion_with_mid_water_or_sun():
 	energy_converted = crop._convert_energy(100)
 	assert_between(int(energy_converted), 1, 99)
 
+
 func test_partial_energy_conversion_with_few_leaves():
 	stub(crop, '_sun').to_return(1000)
 	stub(crop, '_consume_water').to_return(10)
@@ -138,8 +149,10 @@ func test_partial_energy_conversion_with_few_leaves():
 	energy_converted = crop._convert_energy(100)
 	assert_between(int(energy_converted), 1, 99)
 
+
 #####################################################################################
 # Growth test
+
 
 func test_leaves_wont_grow_without_sun():
 	stub(crop, '_sun').to_return(0)
@@ -153,6 +166,7 @@ func test_leaves_wont_grow_without_sun():
 
 	assert_lt(crop.leaves, 1.0)
 
+
 func test_leaves_wont_grow_without_water():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
@@ -165,6 +179,7 @@ func test_leaves_wont_grow_without_water():
 
 	assert_lt(crop.leaves, 1.0)
 
+
 func test_leaves_wont_grow_without_nutrients():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
@@ -175,6 +190,7 @@ func test_leaves_wont_grow_without_nutrients():
 	crop.cycle()
 
 	assert_lt(crop.leaves, 1.0)
+
 
 func test_leaves_wont_grow_if_in_setpoint():
 	stub(crop, '_sun').to_return(1000)
@@ -187,6 +203,7 @@ func test_leaves_wont_grow_if_in_setpoint():
 	crop.cycle()
 
 	assert_lt(crop.leaves, 50)
+
 
 func test_leaves_grow_with_good_conditions():
 	stub(crop, '_sun').to_return(1000)
@@ -201,6 +218,7 @@ func test_leaves_grow_with_good_conditions():
 	crop.cycle()
 
 	assert_gt(crop.leaves, 5.0)
+
 
 func test_leaves_grow_faster_when_less_leaves():
 	stub(crop, '_sun').to_return(1000)
@@ -220,6 +238,7 @@ func test_leaves_grow_faster_when_less_leaves():
 
 	assert_gt(growth_1, growth_2)
 
+
 func test_water_and_nutrients_are_consumed_when_grow():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
@@ -236,6 +255,7 @@ func test_water_and_nutrients_are_consumed_when_grow():
 	assert_lt(crop.substract.minerals["Na"], 100)
 	assert_lt(crop.substract.water, 100)
 
+
 func test_no_water_is_consumed_if_not_grown_by_lacking_nutrients():
 	stub(crop, '_sun').to_return(1000)
 	crop.substract.add_water(100)  # TODO: this might break when add water excess harm
@@ -247,6 +267,7 @@ func test_no_water_is_consumed_if_not_grown_by_lacking_nutrients():
 
 	assert_lt(crop.leaves, 10.0)
 	assert_eq(crop.substract.water, 100)
+
 
 func test_no_nutrients_are_consumed_if_not_grown_by_lacking_water():
 	stub(crop, '_sun').to_return(1000)
@@ -267,16 +288,66 @@ func test_no_nutrients_are_consumed_if_not_grown_by_lacking_water():
 func test_growth_curve():
 	stub(crop, '_sun').to_return(1000)
 	var mineral = "Na"
-	crop.needs = {mineral: 10}
-	crop.substract.add_mineral(mineral, 10000)
-	crop.substract.add_water(10000000000)
+	var pos = Vector2(0, 0)
+	crop.index = pos
+	crop.needs = {mineral: 1}
+	var substract = autofree(field.get_soil_substract(pos))
+	stub(field, 'on_crop_died').to_do_nothing()
+	substract.add_mineral(mineral, 1000)
+	substract.add_water(1000000)
+
 	crop.leaves = 1
 	crop.leaves_setpoint = 100
 
-	print("CYCLE	LEAVES	SPROUTS	FLOWERS	FRUITS")
+	# No stress
+	print_crop("res://reports/crop.csv")
+
+	# Sun = 500
+	crop.current_stage = crop.stages.INITIAL
+	crop.leaves = 0
+	stub(crop, '_sun').to_return(500)
+	print_crop("res://reports/crop_sun_500.csv")
+
+	# Hydric stress
+	stub(crop, '_sun').to_return(1000)
+	crop.current_stage = crop.stages.INITIAL
+	crop.leaves = 0
+	crop.water_absorption_flow = 0.01
+	print_crop("res://reports/crop_stress_hydric.csv")
+
+
+func print_crop(file_name):
+	var file = File.new()
+	file.open(file_name, File.WRITE)
+
+	var initial_cycle = crop.stages_cycles[0]
+	var season_cycles = -initial_cycle
+	for stage in crop.stages_cycles:
+		season_cycles += crop.stages_cycles[stage]
+
+	var sample_seasons = 5
+
+	var total_cycles = initial_cycle + sample_seasons * season_cycles
+
 	var div = "	"
-	for i in range(300):
-		print(
+	file.store_line(
+		(
+			"CYCLE"
+			+ div
+			+ "LEAVES"
+			+ div
+			+ "SPROUTS"
+			+ div
+			+ "FLOWERS"
+			+ div
+			+ "FRUITS"
+			+ div
+			+ "mineral"
+		)
+	)
+	for i in range(total_cycles):
+		crop.cycle()
+		file.store_line(
 			(
 				str(i)
 				+ div
@@ -287,6 +358,9 @@ func test_growth_curve():
 				+ str(crop.flowers)
 				+ div
 				+ str(crop.total_fruits)
+				+ div
+				+ str(crop.substract.minerals["Na"])
 			)
 		)
-		crop.cycle()
+
+	file.close()
